@@ -25,7 +25,6 @@
       margin: 0; padding: 0; width: 100%; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
     }
 
-    /* 頂部固定區域 */
     .fixed-header {
       position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
       background-color: var(--soft-pink); padding-top: env(safe-area-inset-top);
@@ -34,7 +33,6 @@
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.4rem; letter-spacing: 1px; }
 
-    /* 天氣：粉底、黑字 */
     .weather-widget { 
       background-color: rgba(255,183,197,0.4); color: #000000; 
       padding: 6px 20px; border-radius: 25px; font-size: 0.85rem; 
@@ -63,23 +61,20 @@
 
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(255,183,197,0.3); }
     
-    /* 調整輸入框樣式 */
-    .form-control-lg { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 14px; font-size: 1rem; text-align: center; }
+    /* 輸入框樣式 */
+    .form-control-lg { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 12px; font-size: 0.95rem; text-align: center; }
     
-    /* ★ 類別選單：縮小並置中 ★ */
+    /* 類別選單優化 */
     .form-select-sm-custom { 
-      border-radius: 12px !important; border: 2px solid #fff5f7; 
-      padding: 8px 12px; font-size: 0.9rem; width: auto; min-width: 120px; 
-      margin: 0 auto 15px; display: block;
+      border-radius: 15px !important; border: 2px solid #fff5f7; 
+      padding: 12px 8px; font-size: 0.95rem; width: 100%; height: 100%;
     }
     
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
 
     /* 職業級啟動畫面 */
     .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-    @keyframes pulse {
-      0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); }
-    }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     .section { display: none; }
     .active-section { display: block; }
   </style>
@@ -113,12 +108,19 @@
         <div class="h2 fw-bold mb-0">NT$ <span id="total-twd">0</span></div>
       </div>
       <div class="pink-card">
-        <select id="expense-category" class="form-select form-select-sm-custom">
-          <option value="飲食">🍽️ 飲食</option><option value="交通">🚇 交通</option>
-          <option value="購物">🛍️ 購物</option><option value="娛樂">🎟️ 娛樂</option><option value="其他">📌 其他</option>
-        </select>
-        <input type="text" id="expense-item" class="form-control form-control-lg mb-3" placeholder="請輸入支出項目">
         
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <select id="expense-category" class="form-select form-select-sm-custom">
+              <option value="飲食">🍽️ 飲食</option><option value="交通">🚇 交通</option>
+              <option value="購物">🛍️ 購物</option><option value="娛樂">🎟️ 娛樂</option><option value="其他">📌 其他</option>
+            </select>
+          </div>
+          <div class="col-8">
+            <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="請輸入支出項目">
+          </div>
+        </div>
+
         <div class="row g-2 mb-4">
           <div class="col-5">
             <label class="small fw-bold mb-1 d-block text-center" style="color:#ff8fa3;">台幣 NT$</label>
@@ -126,9 +128,10 @@
           </div>
           <div class="col-7">
             <label class="small fw-bold mb-1 d-block text-center text-muted">韓元 ₩</label>
-            <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入金額" oninput="autoCalcTWD()">
+            <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入韓元" oninput="autoCalcTWD()">
           </div>
         </div>
+        
         <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存這筆紀錄</button>
       </div>
       <div id="expense-list"></div>
@@ -171,10 +174,8 @@
       btn.classList.add('active'); window.scrollTo(0,0);
     }
 
-    // ★ 核心：單向韓元換台幣 ★
     function autoCalcTWD() {
       let krw = document.getElementById('expense-krw').value;
-      // 只有在韓元格輸入時，才會自動推算台幣
       document.getElementById('expense-twd').value = krw ? Math.round(krw * currentRate) : '';
     }
 
@@ -183,38 +184,16 @@
       document.getElementById('quick-twd').value = krw ? Math.round(krw * currentRate).toLocaleString() : '0';
     }
 
-    // --- 1. 天氣功能 (請更換成這段) ---
     async function fetchSeoulWeather() {
       try {
-        // 抓取天氣代碼 (weathercode)
         const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
         const data = await response.json();
         const code = data.current_weather.weathercode;
         const temp = Math.round(data.current_weather.temperature);
-        
-        let icon = "☀️"; // 預設晴天
-        
-        // 依照妳指定的四種符號進行判斷
-        if (code === 0) {
-          icon = "☀️"; // 晴天
-        } else if (code === 1 || code === 2) {
-          icon = "🌥️"; // 有一點太陽
-        } else if (code === 3 || code === 45 || code === 48) {
-          icon = "☁️"; // 陰天
-        } else if (code >= 51) {
-          icon = "🌧️"; // 下雨 (包含雷雨或下雪)
-        }
-
-        // 呈現結果：粉底、黑字、加上妳要的符號
+        let icon = "☀️"; if (code === 0) icon = "☀️"; else if (code <= 2) icon = "🌥️"; else if (code <= 48) icon = "☁️"; else icon = "🌧️";
         document.getElementById('weather-info').innerHTML = `📍首爾即時：${icon} ${temp}°C`;
-      } catch (e) { 
-        document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; 
-      }
+      } catch (e) { document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; }
     }
-
-    // --- 2. 記得下面要有一行執行它 ---
-    fetchSeoulWeather();
-
 
     let startX = 0, startY = 0;
     const swipePage = document.getElementById('page-itinerary');
@@ -253,6 +232,10 @@
       let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
       document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
       if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
+      updateList(data);
+    });
+
+    function updateList(data) {
       let total = 0;
       let expHtml = data.expenses.slice().reverse().map(row => {
         let twd = parseFloat(row[4]) || Math.round(row[3] * currentRate);
@@ -266,7 +249,7 @@
       }).join('');
       document.getElementById('total-twd').innerText = total.toLocaleString();
       document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center py-4 text-muted small">尚無支出紀錄</p>';
-    });
+    }
 
     function submitExpense() {
       let btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "儲存中...";
@@ -274,7 +257,7 @@
         action: 'add', category: document.getElementById('expense-category').value, item: document.getElementById('expense-item').value,
         krwAmount: document.getElementById('expense-krw').value, twdAmount: document.getElementById('expense-twd').value
       })}).then(r => r.json()).then(d => {
-        renderData(d); btn.disabled = false; btn.innerText = "儲存這筆紀錄";
+        updateList(d); btn.disabled = false; btn.innerText = "儲存這筆紀錄";
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
       });
     }
@@ -283,9 +266,8 @@
       if(!confirm("確定刪除此筆記帳？")) return;
       document.getElementById('loading').style.display='flex';
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNum: id })})
-      .then(r => r.json()).then(d => renderData(d));
+      .then(r => r.json()).then(d => { updateList(d); document.getElementById('loading').style.display='none'; });
     }
   </script>
 </body>
 </html>
-
