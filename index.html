@@ -153,6 +153,7 @@
 
     let globalData = { itinerary: [], routes: [] };
     let currentRate = 0.023; 
+    let currentSelectedDate = ""; // 新增這行
 
     function showPage(pageId, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
@@ -185,6 +186,49 @@ async function fetchSeoulWeather() {
     }
 
     fetchSeoulWeather();
+    // === 手勢滑動切換日期功能 ===
+let touchstartX = 0;
+let touchendX = 0;
+
+const itenArea = document.getElementById('page-itinerary');
+
+// 監聽手指碰觸螢幕
+itenArea.addEventListener('touchstart', e => {
+  touchstartX = e.changedTouches[0].screenX;
+}, {passive: true});
+
+// 監聽手指離開螢幕
+itenArea.addEventListener('touchend', e => {
+  touchendX = e.changedTouches[0].screenX;
+  handleSwipeGesture();
+}, {passive: true});
+
+function handleSwipeGesture() {
+  const threshold = 70; // 滑動超過 70 像素才觸發，避免誤觸
+  // 找出所有日期跟當前日期的索引
+  const dates = [...new Set(globalData.itinerary.concat(globalData.routes).map(r => r[1]))].filter(d => d).sort();
+  const currentIndex = dates.indexOf(currentSelectedDate);
+  const tabs = document.querySelectorAll('#itin-date-tabs .date-tab');
+
+  if (touchendX < touchstartX - threshold) {
+    // 往左滑 -> 切換到「下一天」
+    if (currentIndex < dates.length - 1) {
+      const nextDate = dates[currentIndex + 1];
+      filterItinerary(nextDate, tabs[currentIndex + 1]);
+      // 自動將標籤捲動到中間，視覺更強迫症（完美）
+      tabs[currentIndex + 1].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  if (touchendX > touchstartX + threshold) {
+    // 往右滑 -> 切換到「前一天」
+    if (currentIndex > 0) {
+      const prevDate = dates[currentIndex - 1];
+      filterItinerary(prevDate, tabs[currentIndex - 1]);
+      tabs[currentIndex - 1].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+}
     fetch(GAS_URL).then(res => res.json()).then(data => renderData(data)).catch(() => {
       alert("資料讀取失敗！");
       document.getElementById('loading').style.display = 'none';
@@ -226,6 +270,7 @@ async function fetchSeoulWeather() {
         return `<div class="pink-card"><div class="d-flex justify-content-between mb-2"><span>${r[4]?'<span class="note-badge">🕒 '+r[4]+'</span>':''}</span>${nav}</div><h4 class="fw-bold" style="color:#333;">${r[2]}</h4><p class="text-muted mb-0">${r[3]||''}</p></div>`;
       }).join('');
       document.getElementById('itinerary-list').innerHTML = html || '<p class="text-muted text-center">今日暫無行程</p>';
+      currentSelectedDate = date;
     }
 
     function submitExpense() {
@@ -253,4 +298,5 @@ async function fetchSeoulWeather() {
   </script>
 </body>
 </html>
+
 
