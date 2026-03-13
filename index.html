@@ -172,15 +172,15 @@
       document.getElementById('quick-twd').value = krw ? Math.round(krw * currentRate).toLocaleString() : '0';
     }
 
-    async function fetchSeoulWeather() {
+async function fetchSeoulWeather() {
+
       try {
         const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
         const data = await response.json();
         const temp = data.current_weather.temperature;
-        // 黃色字體優化：使用金黃色 #FFD700 確保可讀性
-        document.getElementById('weather-info').innerHTML = `📍<span style="color: #FFD700;">首爾即時：🌸 ${temp}°C</span>`;
+        document.getElementById('weather-info').innerHTML = `📍首爾即時：🌸 ${temp}°C `;
       } catch (e) {
-        document.getElementById('weather-info').innerHTML = `📍<span style="color: #FFD700;">首爾：預祝旅程平安 🌸</span>`;
+        document.getElementById('weather-info').innerHTML = `📍首爾：美好旅程 🌸`;
       }
     }
 
@@ -253,3 +253,4 @@
   </script>
 </body>
 </html>
+
