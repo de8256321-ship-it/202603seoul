@@ -1,0 +1,15 @@
+{
+  "short_name": "首爾 2026",
+  "name": "首爾櫻花祭 2026",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#ffffff",
+  "theme_color": "#ffc0cb",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968314.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
