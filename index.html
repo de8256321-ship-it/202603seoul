@@ -20,16 +20,15 @@
   <style>
     :root { --sakura-pink: #FFB7C5; --soft-pink: #FFF0F5; --text-color: #4A4A4A; }
     
-    /* 核心佈局：禁止橫向跑版 */
     html, body { 
       background-color: var(--soft-pink); 
       font-family: 'jf-openhuninn', sans-serif; 
       color: var(--text-color); 
-      margin: 0; padding: 0; width: 100%; overflow-x: hidden; 
+      margin: 0; padding: 0; width: 100%; overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* 固定頂部區域 (包含標題、天氣、日期) */
+    /* 頂部固定區域 */
     .fixed-header {
       position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
       background-color: var(--soft-pink);
@@ -40,14 +39,14 @@
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.4rem; letter-spacing: 1px; }
 
-    /* ★ 天氣小工具：粉底、黑字 ★ */
+    /* ★ 天氣：回歸原始淡粉紅底、文字純黑 ★ */
     .weather-widget { 
-      background-color: var(--sakura-pink); color: #000000; 
+      background-color: rgba(255,183,197,0.4); 
+      color: #000000; 
       padding: 6px 20px; border-radius: 25px; font-size: 0.85rem; 
       font-weight: bold; display: inline-block; margin-top: 5px;
     }
 
-    /* 日期選單：水平滑動但不影響頁面 */
     .date-tabs-container { 
       display: flex; overflow-x: auto; gap: 10px; padding: 10px 15px 15px; 
       white-space: nowrap; scrollbar-width: none; 
@@ -60,29 +59,35 @@
     }
     .date-tab.active { background: var(--sakura-pink); color: white; box-shadow: 0 4px 10px rgba(255,183,197,0.3); }
 
-    /* 內容區：為固定頂部留空間 */
-    .content-area { padding: 170px 15px 100px; width: 100%; }
+    /* 核心：讓行程頁面強制撐滿螢幕，確保粉紅處都能滑動 */
+    #page-itinerary { 
+      min-height: 100vh; 
+      width: 100%;
+      position: relative;
+    }
 
-    /* 絲滑切換動畫 */
-    .fade-in-up { animation: fadeInUp 0.35s ease-out forwards; }
+    .content-area { 
+      padding: 175px 15px 120px; 
+      min-height: 100vh; /* 確保沒行程時，粉紅色背景也是可觸碰的 */
+    }
+
+    /* 切換動畫 */
+    .fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
     @keyframes fadeInUp {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 卡片與元件 */
     .pink-card { 
       background: white; border-radius: 22px; border: none; 
       box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; 
     }
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
     
-    /* 底部導覽 */
     .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-bottom: calc(env(safe-area-inset-bottom) + 5px); }
     .nav-btn { border: none; background: none; color: #bbb; font-weight: bold; font-size: 0.85rem; padding: 10px; flex: 1; }
     .nav-btn.active { color: var(--sakura-pink); background: #fff8f9; border-radius: 12px; }
 
-    /* 記帳與匯率專區樣式保持大尺寸 */
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(255,183,197,0.3); }
     .form-control-lg { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 14px; font-size: 1rem; }
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; }
@@ -187,26 +192,26 @@
       } catch (e) { document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; }
     }
 
-    // --- 全域滑動手勢：鎖定行程內容區 ---
+    // --- 改良版滑動：監聽整個頁面，感應所有粉紅區域 ---
     let startX = 0, startY = 0;
-    const swipeArea = document.getElementById('page-itinerary');
+    const swipePage = document.getElementById('page-itinerary');
 
-    swipeArea.addEventListener('touchstart', e => {
+    swipePage.addEventListener('touchstart', e => {
       startX = e.touches[0].clientX;
       startY = e.touches[0].clientY;
     }, {passive: true});
 
-    swipeArea.addEventListener('touchend', e => {
+    swipePage.addEventListener('touchend', e => {
       const dx = e.changedTouches[0].clientX - startX;
       const dy = Math.abs(e.changedTouches[0].clientY - startY);
       
-      // 橫向滑動需大於縱向，且位移超過門檻
-      if (Math.abs(dx) > dy && Math.abs(dx) > 70) {
+      // 判斷：如果是行程分頁，且橫向位移 > 縱向位移，且位移夠長
+      if (swipePage.classList.contains('active-section') && Math.abs(dx) > dy && Math.abs(dx) > 70) {
         let dates = [...new Set(globalData.itinerary.concat(globalData.routes).map(r => r[1]))].filter(d => d).sort();
         let idx = dates.indexOf(currentSelectedDate);
-        if (dx < 0 && idx < dates.length - 1) { // 往左滑 -> 下一天
+        if (dx < 0 && idx < dates.length - 1) { 
           filterItinerary(dates[idx+1], document.querySelectorAll('.date-tab')[idx+1]);
-        } else if (dx > 0 && idx > 0) { // 往右滑 -> 前一天
+        } else if (dx > 0 && idx > 0) {
           filterItinerary(dates[idx-1], document.querySelectorAll('.date-tab')[idx-1]);
         }
       }
@@ -240,37 +245,29 @@
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted opacity-50">今日暫無行程規劃</p>';
     }
 
-    function renderData(res) {
+    fetchSeoulWeather();
+    fetch(GAS_URL).then(res => res.json()).then(data => {
       document.getElementById('loading').style.display = 'none';
-      globalData = res; currentRate = res.rate;
+      globalData = data; currentRate = data.rate;
       document.getElementById('current-rate').innerText = currentRate.toFixed(4);
-      
-      let dates = [...new Set(res.itinerary.concat(res.routes).map(r => r[1]))].filter(d => d).sort();
-      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => 
-        `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)">
-          <div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div>
-          <div>${d}</div>
-        </div>`).join('');
+      let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
+      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
       if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
-
+      
       let total = 0;
-      let expHtml = res.expenses.slice().reverse().map(row => {
+      let expHtml = data.expenses.slice().reverse().map(row => {
         let twd = parseFloat(row[4]) || Math.round(row[3] * currentRate);
         total += twd;
         return `<div class="pink-card d-flex justify-content-between align-items-center mb-2" style="padding: 15px 20px;">
-                  <div><div class="text-muted small" style="font-size:0.7rem;">${row[0]} | ${row[1]}</div><div class="fw-bold">${row[2]}</div></div>
+                  <div><div class="text-muted x-small" style="font-size:0.7rem;">${row[0]} | ${row[1]}</div><div class="fw-bold">${row[2]}</div></div>
                   <div class="text-end d-flex align-items-center gap-3">
-                    <div><div class="fw-bold text-danger">$${twd.toLocaleString()}</div><div class="text-muted" style="font-size:0.7rem;">₩${Number(row[3]).toLocaleString()}</div></div>
+                    <div><div class="fw-bold text-danger">$${twd.toLocaleString()}</div><div class="text-muted" style="font-size:0.75rem;">₩${Number(row[3]).toLocaleString()}</div></div>
                     <button onclick="removeExpense(${row[row.length-1]})" class="btn btn-link p-0 opacity-25">🗑️</button>
-                  </div>
-                </div>`;
+                  </div></div>`;
       }).join('');
       document.getElementById('total-twd').innerText = total.toLocaleString();
       document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center py-4 text-muted small">尚無支出紀錄</p>';
-    }
-
-    fetchSeoulWeather();
-    fetch(GAS_URL).then(res => res.json()).then(data => renderData(data));
+    });
 
     function submitExpense() {
       let btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "儲存中...";
