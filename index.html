@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFB7C5">
+  
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
+
+  <link rel="manifest" href='data:application/manifest+json,{"name":"首爾賞櫻","short_name":"首爾賞櫻","display":"standalone","background_color":"#FFF0F5","theme_color":"#FFB7C5","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🌸%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🌸%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root { --sakura-pink: #FFB7C5; --soft-pink: #FFF0F5; --text-color: #4A4A4A; }
+    body { background-color: var(--soft-pink); font-family: 'Noto Sans TC', sans-serif; color: var(--text-color); padding-bottom: 80px; }
+    .navbar { background-color: white !important; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); }
+    .nav-btn { border: none; background: none; color: #888; font-weight: bold; transition: 0.3s; padding: 12px 30px; border-radius: 15px;}
+    .nav-btn.active { color: var(--sakura-pink); transform: scale(1.1); background-color: #fff0f5;}
+    
+    .pink-card { background: white; border-radius: 20px; border: none; box-shadow: 0 4px 15px rgba(255,183,197,0.3); margin-bottom: 15px; padding: 18px; }
+    .note-badge { background-color: var(--sakura-pink); color: white; border-radius: 20px; padding: 6px 14px; display: inline-block; font-weight: bold; font-size: 0.85em; letter-spacing: 0.5px;}
+    .btn-pink { background-color: var(--sakura-pink); color: white; border-radius: 15px; border: none; padding: 10px; font-weight: bold; }
+    .btn-pink:hover { background-color: #ff9fb1; color: white;}
+    .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--soft-pink); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+    .section { display: none; }
+    .active-section { display: block; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .date-tabs-container { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 10px; margin-bottom: 15px; white-space: nowrap; scrollbar-width: none; align-items: center;}
+    .date-tabs-container::-webkit-scrollbar { display: none; }
+    .date-tab { display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: white; border: 2px solid var(--sakura-pink); color: var(--sakura-pink); border-radius: 18px; padding: 8px 20px; font-weight: bold; cursor: pointer; transition: 0.3s; flex-shrink: 0; box-shadow: 0 2px 8px rgba(255,183,197,0.2);}
+    .date-tab.active { background-color: var(--sakura-pink); color: white; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(255,183,197,0.5);}
+    
+    .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 20px; padding: 20px; box-shadow: 0 4px 15px rgba(255,183,197,0.4); margin-bottom: 20px; }
+    
+    .weather-widget { background-color: rgba(255,183,197,0.25); color: #d81b60; padding: 6px 18px; border-radius: 20px; font-size: 0.85em; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+
+    /* ★ 新增：浮動換算小工具樣式 */
+    .fab { position: fixed; bottom: 85px; right: 20px; background: var(--sakura-pink); color: white; border: none; border-radius: 50%; width: 55px; height: 55px; font-size: 1.5em; box-shadow: 0 4px 15px rgba(255,183,197,0.6); z-index: 1000; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+    .fab:active { transform: scale(0.9); }
+    .converter-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; opacity: 0; visibility: hidden; transition: 0.3s ease; backdrop-filter: blur(2px); }
+    .converter-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: white; border-radius: 30px 30px 0 0; z-index: 1002; padding: 20px 25px 40px; box-shadow: 0 -5px 25px rgba(0,0,0,0.15); transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); }
+    .converter-modal.show { bottom: 0; }
+    .converter-overlay.show { opacity: 1; visibility: visible; }
+    .close-bar { width: 45px; height: 5px; background: #ddd; border-radius: 10px; margin: 0 auto 20px; }
+  </style>
+</head>
+<body>
+
+  <div id="loading" class="loading-screen">
+    <h2 style="color: var(--sakura-pink);">🌸</h2>
+    <p>載入專屬行程中...</p>
+  </div>
+
+  <div class="container mt-4">
+    <div id="page-itinerary" class="section active-section">
+      <h3 class="text-center mb-2 fw-bold" style="color: #ff8fa3;">🌸 Seoul 2026.03 🌸</h3>
+      
+      <div class="text-center">
+        <div id="weather-info" class="weather-widget">讀取首爾天氣中... 🌸</div>
+      </div>
+
+      <div id="itin-date-tabs" class="date-tabs-container"></div>
+      <div id="itinerary-list"></div>
+    </div>
+
+    <div id="page-budget" class="section">
+      <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">💰 旅行記帳本</h3>
+      <div class="total-box">
+        <h6 class="mb-1" style="opacity: 0.9;">旅程總花費</h6>
+        <h1 class="fw-bold mb-0">NT$ <span id="total-twd">0</span></h1>
+      </div>
+      <div class="pink-card mb-4" style="background-color: rgba(255, 255, 255, 0.9);">
+        <h6 class="mb-3 text-center fw-bold">💸 新增今日支出</h6>
+        <select id="expense-category" class="form-select form-select-sm mb-2" style="border-radius:10px;">
+          <option value="飲食">🍽️ 飲食</option>
+          <option value="交通">🚇 交通</option>
+          <option value="購物">🛍️ 購物</option>
+          <option value="娛樂">🎟️ 娛樂</option>
+          <option value="其他">📌 其他</option>
+        </select>
+        <div class="mb-2"><input type="text" id="expense-item" class="form-control form-control-sm" placeholder="項目名稱" style="border-radius:10px;"></div>
+        <div class="input-group input-group-sm mb-3">
+          <span class="input-group-text bg-white border-end-0" style="border-top-left-radius:10px; border-bottom-left-radius:10px;">₩</span>
+          <input type="number" id="expense-krw" class="form-control border-start-0" placeholder="輸入韓元" oninput="autoCalcTWD()">
+          <span class="input-group-text bg-white border-end-0 text-danger fw-bold">NT$</span>
+          <input type="number" id="expense-twd" class="form-control border-start-0 text-danger fw-bold" placeholder="台幣(自動)" style="border-top-right-radius:10px; border-bottom-right-radius:10px;">
+        </div>
+        <button onclick="submitExpense()" class="btn btn-pink w-100 btn-sm" id="submit-btn">儲存支出</button>
+      </div>
+      <div class="text-center mb-3 text-muted" style="font-size:0.85em;">
+        匯率參考 1 KRW ≈ <span id="current-rate" class="fw-bold text-danger">--</span> TWD
+      </div>
+      <div id="expense-list"></div>
+    </div>
+  </div>
+
+  <button class="fab" onclick="toggleConverter()">🧮</button>
+
+  <div class="converter-overlay" id="conv-overlay" onclick="toggleConverter()"></div>
+  <div class="converter-modal" id="conv-modal">
+    <div class="close-bar" onclick="toggleConverter()"></div>
+    <h5 class="text-center mb-4 fw-bold" style="color: var(--sakura-pink);">⚡ 快速匯率換算</h5>
+    
+    <div class="pink-card" style="background-color: var(--soft-pink); margin-bottom: 0;">
+      <div class="mb-3">
+        <label class="form-label text-muted" style="font-size: 0.85em; font-weight: bold;">輸入韓元 (KRW)</label>
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-white border-end-0 text-muted">₩</span>
+          <input type="number" id="quick-krw" class="form-control border-start-0 fw-bold" placeholder="0" oninput="quickCalcTWD()" style="font-size: 1.2em;">
+        </div>
+      </div>
+      
+      <div class="text-center mb-3">
+        <span style="font-size: 1.5em; color: var(--sakura-pink);">⬇️</span>
+      </div>
+      
+      <div>
+        <label class="form-label text-muted" style="font-size: 0.85em; font-weight: bold;">折合台幣 (TWD)</label>
+        <div class="input-group input-group-lg">
+          <span class="input-group-text bg-white border-end-0 text-danger fw-bold">NT$</span>
+          <input type="text" id="quick-twd" class="form-control border-start-0 text-danger fw-bold bg-white" placeholder="0" readonly style="font-size: 1.5em;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="navbar fixed-bottom py-2">
+    <div class="container-fluid d-flex justify-content-evenly">
+      <button onclick="showPage('itinerary', this)" class="nav-btn active">📅 行程總覽</button>
+      <button onclick="showPage('budget', this)" class="nav-btn">💰 記帳本</button>
+    </div>
+  </nav>
+
+<script>
+    // ★ 這裡請換成你剛剛在 GAS 部署產生的 Web App URL ★
+    const GAS_URL = '請貼上你的_GAS_網頁應用程式網址'; 
+
+    let globalData = { itinerary: [], routes: [] };
+    let uniqueDates = []; 
+    let currentRate = 0.023; 
+
+    function showPage(pageId, btn) {
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active-section'); });
+      document.getElementById('page-' + pageId).classList.add('active-section');
+      document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    }
+
+    function autoCalcTWD() {
+      var krw = document.getElementById('expense-krw').value;
+      if (krw && currentRate) {
+        document.getElementById('expense-twd').value = Math.round(krw * currentRate);
+      } else {
+        document.getElementById('expense-twd').value = '';
+      }
+    }
+
+    function toggleConverter() {
+      const modal = document.getElementById('conv-modal');
+      const overlay = document.getElementById('conv-overlay');
+      if (modal.classList.contains('show')) {
+        modal.classList.remove('show');
+        overlay.classList.remove('show');
+        setTimeout(() => { 
+          document.getElementById('quick-krw').value = ''; 
+          document.getElementById('quick-twd').value = ''; 
+        }, 300);
+      } else {
+        modal.classList.add('show');
+        overlay.classList.add('show');
+        setTimeout(() => { document.getElementById('quick-krw').focus(); }, 300);
+      }
+    }
+
+    function quickCalcTWD() {
+      var krw = document.getElementById('quick-krw').value;
+      if (krw && currentRate) {
+        var twd = Math.round(krw * currentRate);
+        document.getElementById('quick-twd').value = twd.toLocaleString();
+      } else {
+        document.getElementById('quick-twd').value = '';
+      }
+    }
+
+    async function fetchSeoulWeather() {
+      try {
+        const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
+        const data = await response.json();
+        const temp = data.current_weather.temperature;
+        const code = data.current_weather.weathercode;
+        
+        let icon = '☁️';
+        let desc = '多雲';
+        if (code === 0) { icon = '☀️'; desc = '晴天'; }
+        else if (code >= 1 && code <= 3) { icon = '⛅'; desc = '晴時多雲'; }
+        else if (code >= 45 && code <= 48) { icon = '🌫️'; desc = '霧'; }
+        else if (code >= 51 && code <= 67) { icon = '🌧️'; desc = '雨天'; }
+        else if (code >= 71 && code <= 77) { icon = '❄️'; desc = '雪天'; }
+        else if (code >= 80 && code <= 82) { icon = '🌦️'; desc = '陣雨'; }
+        else if (code >= 95) { icon = '⛈️'; desc = '雷雨'; }
+
+        document.getElementById('weather-info').innerHTML = `📍首爾即時：${icon} ${temp}°C ${desc}`;
+      } catch (error) {
+        document.getElementById('weather-info').innerHTML = `📍首爾：準備迎接美好的旅程 🌸`;
+      }
+    }
+
+    // 初始化：獲取天氣與 GAS 後端資料
+    fetchSeoulWeather();
+    
+    // ★ 改變 1：使用 fetch 向 GAS API 取得初始資料
+    fetch(GAS_URL)
+      .then(response => response.json())
+      .then(data => renderData(data))
+      .catch(error => {
+        alert("讀取失敗，請檢查網路或 API 網址！");
+        document.getElementById('loading').style.display = 'none';
+      });
+
+    function renderData(res) {
+      if (res.error) { alert("讀取失敗：" + res.error); return; }
+      document.getElementById('loading').style.display = 'none';
+      globalData = res;
+      currentRate = res.rate;
+      document.getElementById('current-rate').innerText = currentRate.toFixed(4);
+
+      uniqueDates = [];
+      var allRows = res.itinerary.concat(res.routes);
+      allRows.forEach(function(row) {
+        if(row[1] && uniqueDates.indexOf(row[1]) === -1) { uniqueDates.push(row[1]); }
+      });
+      uniqueDates.sort();
+
+      var tabsHtml = '';
+      if(uniqueDates.length > 0) {
+        uniqueDates.forEach(function(date, index) {
+          var dayNum = index + 1;
+          var activeClass = (index === 0) ? 'active' : ''; 
+          var tabContent = '<span style="font-size: 0.75em; letter-spacing: 1px; margin-bottom: 2px; opacity: 0.8;">DAY ' + dayNum + '</span><span style="font-size: 1.15em; font-weight: 900;">' + date + '</span>';
+          tabsHtml += '<div class="date-tab ' + activeClass + '" onclick="filterItinerary(\'' + date + '\', this)">' + tabContent + '</div>';
+        });
+        document.getElementById('itin-date-tabs').innerHTML = tabsHtml;
+        filterItinerary(uniqueDates[0], document.querySelector('#itin-date-tabs .date-tab.active'));
+      }
+
+      var totalTwdSum = 0;
+      var expHtml = '';
+      var reversedExpenses = res.expenses.slice().reverse();
+      
+      reversedExpenses.forEach(function(row) {
+        if(row[1] && row[2]) {
+          var rowNum = row[row.length - 1]; 
+          var twdAmt = parseFloat(row[4]);
+          if (isNaN(twdAmt)) { twdAmt = Math.round(parseFloat(row[3] || 0) * currentRate); }
+          totalTwdSum += twdAmt; 
+          var krwAmt = row[3] ? Number(row[3]).toLocaleString() : '0';
+          
+          expHtml += '<div class="pink-card d-flex justify-content-between align-items-center mb-2" style="padding: 12px 18px;">' +
+                       '<div>' +
+                         '<div class="text-muted" style="font-size:0.75em; margin-bottom: 2px;">' + row[0] + ' | <span style="color:var(--sakura-pink); font-weight:bold;">' + row[1] + '</span></div>' +
+                         '<div class="fw-bold" style="font-size: 1.05em;">' + row[2] + '</div>' +
+                       '</div>' +
+                       '<div class="text-end d-flex align-items-center gap-2">' +
+                         '<div>' +
+                           '<div class="fw-bold text-danger" style="font-size:1.15em;">NT$' + twdAmt.toLocaleString() + '</div>' +
+                           '<div class="text-muted" style="font-size:0.8em;">₩' + krwAmt + '</div>' +
+                         '</div>' +
+                         '<button onclick="removeExpense(' + rowNum + ')" class="btn p-0 ms-2" style="border:none; background:none; font-size:1.2em; opacity: 0.3;" title="刪除此筆">🗑️</button>' +
+                       '</div>' +
+                     '</div>';
+        }
+      });
+      document.getElementById('total-twd').innerText = totalTwdSum.toLocaleString();
+      document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center text-muted mt-4">今天還沒有花費喔</p>';
+    }
+
+    function filterItinerary(selectedDate, clickedTabElement) {
+      if(clickedTabElement) {
+        document.querySelectorAll('#itin-date-tabs .date-tab').forEach(function(tab) { tab.classList.remove('active'); });
+        clickedTabElement.classList.add('active');
+      }
+      
+      var itinHtml = '';
+      globalData.itinerary.forEach(function(row) {
+        if(row[1] === selectedDate && row[2]) { 
+          var locText = row[2] || ''; 
+          var timeText = row[3] || '';  
+          var noteText = row[4] || ''; 
+          
+          var naverUrl = '';
+          var routeMatch = globalData.routes.find(function(r) { return r[2] === locText; });
+          if(routeMatch && routeMatch[5] && routeMatch[5].indexOf('http') !== -1) { 
+             naverUrl = routeMatch[5]; 
+          }
+
+          itinHtml += '<div class="pink-card">';
+          itinHtml += '  <div class="d-flex justify-content-between align-items-center mb-2">';
+          if(noteText) { 
+            itinHtml += '    <span class="note-badge">🕒 ' + noteText + '</span>'; 
+          } else {
+            itinHtml += '    <span></span>';
+          }
+          if(naverUrl) {
+            itinHtml += '    <a href="' + naverUrl + '" target="_blank" class="btn btn-sm" style="border-radius: 20px; font-weight:bold; color:white; background-color:#03c75a; border:none; padding: 4px 14px; font-size: 0.85em; box-shadow: 0 2px 6px rgba(3,199,90,0.3);">NAVER</a>';
+          }
+          itinHtml += '  </div>';
+          itinHtml += '  <h4 class="mb-1 mt-2" style="font-weight: 800; color: #333;">' + locText + '</h4>';
+          if(timeText) {
+            itinHtml += '  <p class="mb-0 text-muted" style="font-size:0.95em; font-weight: 600;">' + timeText + '</p>';
+          }
+          itinHtml += '</div>';
+        }
+      });
+      document.getElementById('itinerary-list').innerHTML = itinHtml || '<p class="text-center text-muted mt-4">這天還沒有排行程喔</p>';
+    }
+
+    function submitExpense() {
+      var category = document.getElementById('expense-category').value;
+      var item = document.getElementById('expense-item').value;
+      var krwAmount = document.getElementById('expense-krw').value;
+      var twdAmount = document.getElementById('expense-twd').value;
+      var btn = document.getElementById('submit-btn');
+      
+      if (!item || (!krwAmount && !twdAmount)) { alert("請輸入項目與金額！"); return; }
+      
+      btn.innerText = "儲存中..."; btn.disabled = true;
+
+      // ★ 改變 2：使用 fetch 將新增資料 POST 到 GAS
+      fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'add',
+          category: category,
+          item: item,
+          krwAmount: krwAmount,
+          twdAmount: twdAmount
+        })
+      })
+      .then(response => response.json())
+      .then(newData => {
+        document.getElementById('expense-item').value = ''; 
+        document.getElementById('expense-krw').value = ''; 
+        document.getElementById('expense-twd').value = '';
+        btn.innerText = "儲存支出"; btn.disabled = false; 
+        renderData(newData);
+      })
+      .catch(err => {
+        alert("儲存失敗！");
+        btn.innerText = "儲存支出"; btn.disabled = false; 
+      });
+    }
+
+    function removeExpense(rowNum) {
+      if (!confirm("確定要刪除這筆花費嗎？刪除後無法復原喔！")) { return; }
+      document.getElementById('loading').style.display = 'flex'; 
+
+      // ★ 改變 3：使用 fetch 將刪除指令 POST 到 GAS
+      fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'delete',
+          rowNum: rowNum
+        })
+      })
+      .then(response => response.json())
+      .then(newData => {
+        renderData(newData); 
+      })
+      .catch(err => {
+        alert("刪除失敗！");
+        document.getElementById('loading').style.display = 'none';
+      });
+    }
+  </script>
+</body>
+</html>
