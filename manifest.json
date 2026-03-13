@@ -1,13 +1,18 @@
 {
-  "short_name": "首爾 2026",
+  "short_name": "首爾櫻花",
   "name": "首爾櫻花祭 2026",
   "display": "standalone",
   "start_url": "/",
   "background_color": "#ffffff",
-  "theme_color": "#ffc0cb",
+  "theme_color": "#FFB7C5",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/5968/5968314.png",
+      "src": "/sakura-icon.png", 
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/sakura-icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
