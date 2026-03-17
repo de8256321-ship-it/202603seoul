@@ -4,7 +4,7 @@
   "display": "standalone",
   "start_url": "/",
   "background_color": "#FFF0F5",
-  "theme_color": "#FFB7C5",
+  "theme_color": "#FFF0F5",
   "icons": [
     {
       "src": "/sakura-icon.png", 
