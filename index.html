@@ -81,7 +81,81 @@
   </style>
 </head>
 <body>
+//載入畫面調整
+  <div id="app-loader">
+  <div class="loader-inner">
+    <img src="sakura-icon.png" class="main-flower" alt="SEOUL 2026">
+    <h1 class="loader-title">SEOUL 2026</h1>
+    <p class="loader-subtitle">please wait..</p>
+  </div>
+</div>
 
+<style>
+/* 載入畫面樣式 */
+#app-loader {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(to bottom, #FFD1DC, #FFB7C5); /* 這裡可以微調你的漸層色 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  transition: opacity 0.8s ease; /* 消失時的淡出效果 */
+}
+
+.loader-inner {
+  text-align: center;
+}
+
+.main-flower {
+  width: 120px; /* 調整花朵大小 */
+  height: auto;
+  margin-bottom: 20px;
+}
+
+.loader-title {
+  color: white;
+  font-family: sans-serif;
+  letter-spacing: 5px;
+  font-size: 2rem;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.loader-subtitle {
+  color: white;
+  font-family: sans-serif;
+  opacity: 0.8;
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* 讓主要內容先隱藏 */
+#main-app {
+  display: none;
+}
+</style>
+
+<script>
+// 當網頁資源全部下載完畢後執行
+window.addEventListener('load', () => {
+  const loader = document.getElementById('app-loader');
+  const app = document.getElementById('main-app');
+  
+  // 顯示主程式內容
+  if(app) app.style.display = 'block';
+  
+  // 延遲一下下讓使用者看完漂亮的畫面，然後淡出
+  setTimeout(() => {
+    loader.style.opacity = '0';
+    setTimeout(() => {
+      loader.style.display = 'none';
+    }, 800);
+  }, 1500); // 這裡的 1500 是停留時間 (1.5秒)
+});
+</script>
+  //載入畫面調整結束
   <div id="loading" class="loading-screen">
     <div class="text-center">
       <div style="font-size: 5rem; animation: pulse 2s infinite;">🌸</div>
