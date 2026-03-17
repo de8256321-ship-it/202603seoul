@@ -1,28 +1,54 @@
-// 在 index.html 或你的主要 JS 檔案中
-async function fetchSheetData() {
-  const cacheKey = 'seoul_trip_data';
-  
-  // 1. 優先從本地快取抓取資料，實現「秒開」
-  const cachedData = localStorage.getItem(cacheKey);
-  if (cachedData) {
-    renderUI(JSON.parse(cachedData)); // 馬上用舊資料畫出畫面
-  } else {
-    showLoadingSpinner(); // 只有第一次完全沒快取時，才顯示載入轉圈圈
+const CACHE_NAME = 'seoul-blossom-v1';
+
+// 填入你 APP 所有的靜態資源路徑
+const ASSETS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  // 如果有其他 CSS 或圖片請補上，例如：
+  // '/style.css',
+  // '/icon.png'
+];
+
+// 1. 安裝階段：把靜態檔案塞進快取
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
+  self.skipWaiting(); // 強制立即啟用新的 Service Worker
+});
+
+// 2. 啟動階段：清除舊版本的快取，釋放手機空間
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// 3. 攔截請求階段：決定要給快取還是發送網路請求
+self.addEventListener('fetch', (event) => {
+  const requestUrl = new URL(event.request.url);
+
+  // 針對 Google Sheets API (包含 Apps Script) 絕對不做快取，直接放行
+  if (requestUrl.hostname.includes('google.com') || requestUrl.hostname.includes('googleapis.com')) {
+    return; 
   }
 
-  // 2. 背景非同步向 Google Sheets 請求最新資料
-  try {
-    const response = await fetch('你的_GOOGLE_SHEET_API_URL');
-    const newData = await response.json();
-    
-    // 3. 儲存最新資料到本地端
-    localStorage.setItem(cacheKey, JSON.stringify(newData));
-    
-    // 4. 更新畫面 (如果資料有變動，畫面會自動刷新)
-    renderUI(newData);
-  } catch (error) {
-    console.error('無法連線至 Google Sheets，保持顯示離線快取資料', error);
-  } finally {
-    hideLoadingSpinner();
-  }
-}
+  // 其他靜態資源採用 Cache First (快取優先) 策略，實現秒開
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      return cachedResponse || fetch(event.request);
+    })
+  );
+});
