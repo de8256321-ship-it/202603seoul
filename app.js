@@ -38,6 +38,8 @@ async function refreshAppData() {
     try {
         const response = await fetch(SETTINGS.API_URL);
         const rawData = await response.json();
+console.log("這是從 GAS 抓回來的原始資料：", rawData); // 加這行看看到底是什麼
+        
 
         // 資料預處理：單向韓幣轉台幣，並過濾掉不完整的資料
         const processedData = rawData.map(item => {
