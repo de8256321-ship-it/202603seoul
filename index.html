@@ -24,12 +24,12 @@
     :root { --sakura-pink: #FFB7C5; --soft-pink: #FFF0F5; --text-color: #4A4A4A; }
     
     ::-webkit-scrollbar { display: none; }
-    * { -ms-overflow-style: none; scrollbar-width: none; }
+    * { -ms-overflow-style: none; scrollbar-width: none; margin: 0; padding: 0; box-sizing: border-box; }
 
     /* 物理鎖定防下拉 */
     html, body { 
       background-color: var(--soft-pink); font-family: 'jf-openhuninn', sans-serif; color: var(--text-color); 
-      margin: 0; padding: 0; width: 100%; height: 100%;
+      width: 100%; height: 100%;
       position: fixed; overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
     }
 
@@ -40,9 +40,9 @@
     .active-section { display: block; }
 
     .fixed-header {
-      position: sticky; /* 關鍵修改：讓它回到正常排版流 */top: 0;left: 0;width: 100%; 
-      z-index: 1000;background-color: var(--soft-pink); padding-top: env(safe-area-inset-top) ; box-shadow: 0 5px 15px rgba(0,0,0,0.02) ;
-}
+      position: sticky; top: 0; left: 0; width: 100%; 
+      z-index: 1000; background-color: var(--soft-pink); padding-top: env(safe-area-inset-top); box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.4rem; letter-spacing: 1px; }
 
@@ -57,11 +57,11 @@
     .date-tab { 
       display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; 
       border: 1.5px solid var(--sakura-pink); color: var(--sakura-pink); border-radius: 18px; padding: 8px 22px; 
-      font-weight: bold; flex-shrink: 0; min-width: 85px;
+      font-weight: bold; flex-shrink: 0; min-width: 85px; cursor: pointer;
     }
     .date-tab.active { background: var(--sakura-pink); color: white; box-shadow: 0 4px 10px rgba(255,183,197,0.3); }
 
-    .content-area { padding: 135px 15px 120px; }
+    .content-area { padding: 15px 15px 120px; } /* 關鍵修復：135px 改成 15px */
     
     .fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -70,7 +70,7 @@
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
     
     .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-bottom: calc(env(safe-area-inset-bottom) + 5px); }
-    .nav-btn { border: none; background: none; color: #bbb; font-weight: bold; font-size: 0.85rem; padding: 10px; flex: 1; }
+    .nav-btn { border: none; background: none; color: #bbb; font-weight: bold; font-size: 0.85rem; padding: 10px; flex: 1; cursor: pointer; }
     .nav-btn.active { color: var(--sakura-pink); background: #fff8f9; border-radius: 12px; }
 
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(255,183,197,0.3); }
@@ -84,12 +84,11 @@
     
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
 
-    /* 🌸 加入淡出動畫，讓載入畫面消失得更平滑 */
     .loading-screen { 
       position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
       background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); 
       display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; 
-      transition: opacity 0.3s ease-out; /* 平滑淡出 */
+      transition: opacity 0.3s ease-out; 
     }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
   </style>
@@ -266,7 +265,6 @@
       document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center py-4 text-muted small">尚無支出紀錄</p>';
     }
 
-    // 🌸 核心加速：渲染資料與關閉載入畫面的共用函數
     function renderApp(data) {
       globalData = data; 
       currentRate = data.rate || 0.023;
@@ -275,7 +273,6 @@
       let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
       document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
       
-      // 保持目前的日期標籤，或是選擇第一天
       if (dates.length > 0 && !currentSelectedDate) {
         filterItinerary(dates[0], document.querySelector('.date-tab'));
       } else if (currentSelectedDate) {
@@ -289,30 +286,26 @@
     function hideLoading() {
       const loading = document.getElementById('loading');
       loading.style.opacity = '0';
-      setTimeout(() => { loading.style.display = 'none'; }, 300); // 配合 CSS 動畫時間
+      setTimeout(() => { loading.style.display = 'none'; }, 300);
     }
 
-    // 🌸 加速魔法 2：本地快取機制 (Optimistic Rendering)
     fetchSeoulWeather();
     
-    // 1. 先嘗試從本機拿出舊資料秒速渲染
     const cachedData = localStorage.getItem('seoulAppData');
     if (cachedData) {
       try {
         renderApp(JSON.parse(cachedData));
-        hideLoading(); // 資料有了就秒關動畫
+        hideLoading(); 
       } catch (e) { console.error('Cache parsing error'); }
     }
 
-    // 2. 在背景默默去 GAS 抓最新資料更新
     fetch(GAS_URL).then(res => res.json()).then(data => {
-      // 將新資料存入快取
       localStorage.setItem('seoulAppData', JSON.stringify(data));
-      renderApp(data); // 靜默更新畫面
-      if (!cachedData) hideLoading(); // 如果是第一次載入（沒有快取），在這裡關閉動畫
+      renderApp(data); 
+      if (!cachedData) hideLoading(); 
     }).catch(err => {
       console.error('Fetch error:', err);
-      if (!cachedData) hideLoading(); // 就算斷網失敗也要關閉動畫
+      if (!cachedData) hideLoading(); 
     });
 
     function submitExpense() {
@@ -321,7 +314,7 @@
         action: 'add', category: document.getElementById('expense-category').value, item: document.getElementById('expense-item').value,
         krwAmount: document.getElementById('expense-krw').value, twdAmount: document.getElementById('expense-twd').value
       })}).then(r => r.json()).then(d => {
-        localStorage.setItem('seoulAppData', JSON.stringify(d)); // 更新快取
+        localStorage.setItem('seoulAppData', JSON.stringify(d)); 
         updateList(d); btn.disabled = false; btn.innerText = "儲存這筆紀錄";
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
       });
@@ -332,7 +325,7 @@
       document.getElementById('loading').style.display='flex'; document.getElementById('loading').style.opacity='1';
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNum: id })})
       .then(r => r.json()).then(d => { 
-        localStorage.setItem('seoulAppData', JSON.stringify(d)); // 更新快取
+        localStorage.setItem('seoulAppData', JSON.stringify(d)); 
         updateList(d); 
         hideLoading(); 
       });
