@@ -17,6 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
 async function initApp() {
     const loadingScreen = document.getElementById('loading');
     
+    // 🌸 新增：一啟動就抓天氣 (並行執行)
+    if (typeof fetchSeoulWeather === "function") {
+        fetchSeoulWeather(); 
+    }
+
     // 1. 優先載入快取資料 (實現秒開)
     const cachedData = localStorage.getItem(SETTINGS.CACHE_NAME);
     if (cachedData) {
@@ -25,10 +30,11 @@ async function initApp() {
         fadeOutLoading(loadingScreen);
     }
 
-    // 2. 背景更新資料
+    // 2. 背景更新行程與記帳資料
     try {
         const response = await fetch(SETTINGS.API_URL);
         const rawData = await response.json();
+        // ... 後續代碼保持不變
         console.log("✅ 抓到最新資料：", rawData);
 
         // 更新匯率基準
