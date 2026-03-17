@@ -3,7 +3,7 @@
   "name": "首爾櫻花祭 2026",
   "display": "standalone",
   "start_url": "/",
-  "background_color": "#ffffff",
+  "background_color": "#FFF0F5,
   "theme_color": "#FFB7C5",
   "icons": [
     {
