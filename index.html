@@ -80,168 +80,120 @@
     .active-section { display: block; }
   </style>
 </head>
+  
 <body>
-//載入畫面調整
   <div id="app-loader">
-  <div class="loader-inner">
-    <img src="sakura-icon.png" class="main-flower" alt="SEOUL 2026">
-    <h1 class="loader-title">SEOUL 2026</h1>
-    <p class="loader-subtitle">please wait..</p>
-  </div>
-</div>
-
-<style>
-/* 載入畫面樣式 */
-#app-loader {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: linear-gradient(to bottom, #FFD1DC, #FFB7C5); /* 這裡可以微調你的漸層色 */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10000;
-  transition: opacity 0.8s ease; /* 消失時的淡出效果 */
-}
-
-.loader-inner {
-  text-align: center;
-}
-
-.main-flower {
-  width: 120px; /* 調整花朵大小 */
-  height: auto;
-  margin-bottom: 20px;
-}
-
-.loader-title {
-  color: white;
-  font-family: sans-serif;
-  letter-spacing: 5px;
-  font-size: 2rem;
-  margin: 0;
-  text-transform: uppercase;
-}
-
-.loader-subtitle {
-  color: white;
-  font-family: sans-serif;
-  opacity: 0.8;
-  margin-top: 10px;
-  font-style: italic;
-}
-
-/* 讓主要內容先隱藏 */
-#main-app {
-  display: none;
-}
-</style>
-
-<script>
-// 當網頁資源全部下載完畢後執行
-window.addEventListener('load', () => {
-  const loader = document.getElementById('app-loader');
-  const app = document.getElementById('main-app');
-  
-  // 顯示主程式內容
-  if(app) app.style.display = 'block';
-  
-  // 延遲一下下讓使用者看完漂亮的畫面，然後淡出
-  setTimeout(() => {
-    loader.style.opacity = '0';
-    setTimeout(() => {
-      loader.style.display = 'none';
-    }, 800);
-  }, 1500); // 這裡的 1500 是停留時間 (1.5秒)
-});
-</script>
-  //載入畫面調整結束
-  <div id="loading" class="loading-screen">
-    <div class="text-center">
-      <div style="font-size: 5rem; animation: pulse 2s infinite;">🌸</div>
-      <h2 class="fw-bold mt-3" style="color: white; letter-spacing: 5px;">SEOUL 2026</h2>
-      <div class="mt-2" style="color: white; opacity: 0.8; letter-spacing: 2px;">please wait..</div>
+    <div class="loader-inner">
+      <img src="sakura-icon.png" class="main-flower" alt="SEOUL 2026">
+      <h1 class="loader-title">SEOUL 2026</h1>
+      <p class="loader-subtitle">please wait..</p>
     </div>
   </div>
 
-  <div id="page-itinerary" class="section active-section">
-    <div class="fixed-header">
-      <div class="app-header">
-        <div class="app-title">Seoul 2026.03</div>
-        <div id="weather-info" class="weather-widget">讀取天氣中...</div>
-      </div>
-      <div id="itin-date-tabs" class="date-tabs-container"></div>
-    </div>
-    <div class="content-area" id="itinerary-list"></div>
-  </div>
-
-  <div id="page-budget" class="section">
-    <div style="padding: 30px 15px 120px;">
-      <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">旅程記帳本</h3>
-      <div class="total-box">
-        <div class="small opacity-75 mb-1">總花費累積 (NT$)</div>
-        <div class="h2 fw-bold mb-0">NT$ <span id="total-twd">0</span></div>
-      </div>
-      <div class="pink-card">
-        
-        <div class="row g-2 mb-3">
-          <div class="col-4">
-            <select id="expense-category" class="form-select form-select-sm-custom">
-              <option value="飲食">🍽️ 飲食</option><option value="交通">🚇 交通</option>
-              <option value="購物">🛍️ 購物</option><option value="娛樂">🎟️ 娛樂</option><option value="其他">📌 其他</option>
-            </select>
-          </div>
-          <div class="col-8">
-            <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="請輸入支出項目">
-          </div>
+  <div id="main-app-container" style="display: none;">
+    <div id="page-itinerary" class="section active-section">
+      <div class="fixed-header">
+        <div class="app-header">
+          <div class="app-title">Seoul 2026.03</div>
+          <div id="weather-info" class="weather-widget">讀取天氣中...</div>
         </div>
+        <div id="itin-date-tabs" class="date-tabs-container"></div>
+      </div>
+      <div class="content-area" id="itinerary-list"></div>
+    </div>
 
-        <div class="row g-2 mb-4">
-          <div class="col-5">
-            <label class="small fw-bold mb-1 d-block text-center" style="color:#ff8fa3;">台幣 NT$</label>
-            <input type="number" id="expense-twd" class="form-control form-control-lg text-danger fw-bold" placeholder="0">
-          </div>
-          <div class="col-7">
-            <label class="small fw-bold mb-1 d-block text-center text-muted">韓元 ₩</label>
-            <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入韓元" oninput="autoCalcTWD()">
-          </div>
+    <div id="page-budget" class="section">
+      <div style="padding: 30px 15px 120px;">
+        <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">旅程記帳本</h3>
+        <div class="total-box">
+          <div class="small opacity-75 mb-1">總花費累積 (NT$)</div>
+          <div class="h2 fw-bold mb-0">NT$ <span id="total-twd">0</span></div>
         </div>
-        
-        <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存這筆紀錄</button>
+        <div class="pink-card">
+          <div class="row g-2 mb-3">
+            <div class="col-4">
+              <select id="expense-category" class="form-select form-select-sm-custom">
+                <option value="飲食">🍽️ 飲食</option><option value="交通">🚇 交通</option>
+                <option value="購物">🛍️ 購物</option><option value="娛樂">🎟️ 娛樂</option><option value="其他">📌 其他</option>
+              </select>
+            </div>
+            <div class="col-8">
+              <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="請輸入支出項目">
+            </div>
+          </div>
+          <div class="row g-2 mb-4">
+            <div class="col-5">
+              <label class="small fw-bold mb-1 d-block text-center" style="color:#ff8fa3;">台幣 NT$</label>
+              <input type="number" id="expense-twd" class="form-control form-control-lg text-danger fw-bold" placeholder="0">
+            </div>
+            <div class="col-7">
+              <label class="small fw-bold mb-1 d-block text-center text-muted">韓元 ₩</label>
+              <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入韓元" oninput="autoCalcTWD()">
+            </div>
+          </div>
+          <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存這筆紀錄</button>
+        </div>
+        <div id="expense-list"></div>
       </div>
-      <div id="expense-list"></div>
     </div>
+
+    <div id="page-exchange" class="section">
+      <div style="padding: 30px 15px 120px;">
+        <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">快速換算</h3>
+        <div class="pink-card text-center mb-4" style="background:#fff9fa;">
+          <div class="text-muted small mb-1">即時匯率基準</div>
+          <h4 class="fw-bold mb-0" style="color: var(--sakura-pink);">1 KRW = <span id="current-rate">--</span> TWD</h4>
+        </div>
+        <div class="pink-card">
+          <label class="form-label fw-bold small">輸入韓元 (KRW)</label>
+          <input type="number" id="quick-krw" class="form-control form-control-lg mb-4" placeholder="0" oninput="quickCalcTWD_Page()">
+          <div class="text-center mb-4 opacity-25">▼</div>
+          <label class="form-label fw-bold small">折合台幣 (TWD)</label>
+          <input type="text" id="quick-twd" class="form-control form-control-lg text-danger fw-bold bg-light" readonly>
+        </div>
+      </div>
+    </div>
+
+    <nav class="navbar fixed-bottom py-2">
+      <div class="container-fluid d-flex justify-content-evenly">
+        <button onclick="showPage('itinerary', this)" class="nav-btn active">📅 行程</button>
+        <button onclick="showPage('budget', this)" class="nav-btn">💰 記帳</button>
+        <button onclick="showPage('exchange', this)" class="nav-btn">⚡ 匯率</button>
+      </div>
+    </nav>
   </div>
 
-  <div id="page-exchange" class="section">
-    <div style="padding: 30px 15px 120px;">
-      <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">快速換算</h3>
-      <div class="pink-card text-center mb-4" style="background:#fff9fa;">
-        <div class="text-muted small mb-1">即時匯率基準</div>
-        <h4 class="fw-bold mb-0" style="color: var(--sakura-pink);">1 KRW = <span id="current-rate">--</span> TWD</h4>
-      </div>
-      <div class="pink-card">
-        <label class="form-label fw-bold small">輸入韓元 (KRW)</label>
-        <input type="number" id="quick-krw" class="form-control form-control-lg mb-4" placeholder="0" oninput="quickCalcTWD_Page()">
-        <div class="text-center mb-4 opacity-25">▼</div>
-        <label class="form-label fw-bold small">折合台幣 (TWD)</label>
-        <input type="text" id="quick-twd" class="form-control form-control-lg text-danger fw-bold bg-light" readonly>
-      </div>
-    </div>
-  </div>
-
-  <nav class="navbar fixed-bottom py-2">
-    <div class="container-fluid d-flex justify-content-evenly">
-      <button onclick="showPage('itinerary', this)" class="nav-btn active">📅 行程</button>
-      <button onclick="showPage('budget', this)" class="nav-btn">💰 記帳</button>
-      <button onclick="showPage('exchange', this)" class="nav-btn">⚡ 匯率</button>
-    </div>
-  </nav>
+  <style>
+    /* 載入畫面樣式：確保蓋掉一切且顏色符合 */
+    #app-loader {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(180deg, #FFD1DC 0%, #FFB7C5 100%);
+      display: flex; justify-content: center; align-items: center; z-index: 99999;
+      transition: opacity 0.6s ease;
+    }
+    .loader-inner { text-align: center; }
+    .main-flower { width: 100px; height: auto; margin-bottom: 25px; }
+    .loader-title { color: white; font-family: sans-serif; letter-spacing: 8px; font-size: 2.2rem; margin: 0; font-weight: bold; }
+    .loader-subtitle { color: white; font-family: sans-serif; opacity: 0.9; margin-top: 15px; font-style: italic; font-size: 1.1rem; }
+  </style>
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec'; 
     let globalData = { itinerary: [], routes: [] }, currentRate = 0.023, currentSelectedDate = "";
 
+    // 整合後的載入完成處理
+    function hideLoader() {
+      const loader = document.getElementById('app-loader');
+      const mainApp = document.getElementById('main-app-container');
+      
+      mainApp.style.display = 'block'; // 顯示內容
+      setTimeout(() => {
+        loader.style.opacity = '0';
+        setTimeout(() => { loader.style.display = 'none'; }, 600);
+      }, 800); // 讓美美的載入畫面至少停留一下
+    }
+
+    // 頁面切換
     function showPage(pageId, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
       document.getElementById('page-' + pageId).classList.add('active-section');
@@ -249,16 +201,48 @@ window.addEventListener('load', () => {
       btn.classList.add('active'); window.scrollTo(0,0);
     }
 
+    // 初始化與資料抓取
+    async function initApp() {
+      fetchSeoulWeather();
+      
+      try {
+        const response = await fetch(GAS_URL);
+        const data = await response.json();
+        
+        globalData = data; 
+        currentRate = data.rate;
+        document.getElementById('current-rate').innerText = currentRate.toFixed(4);
+        
+        let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
+        document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => 
+          `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)">
+            <div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div>
+            <div>${d}</div>
+          </div>`).join('');
+        
+        if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
+        updateList(data);
+        
+        // 資料抓完後隱藏載入畫面
+        hideLoader();
+      } catch (e) {
+        console.error("載入失敗:", e);
+        hideLoader(); // 即使失敗也隱藏載入畫面，讓使用者能用離線快取的內容
+      }
+    }
+
+    // 啟動程式
+    initApp();
+
+    // --- 以下保留你原本的邏輯代碼 (Weather, Calc, filter, updateList 等) ---
     function autoCalcTWD() {
       let krw = document.getElementById('expense-krw').value;
       document.getElementById('expense-twd').value = krw ? Math.round(krw * currentRate) : '';
     }
-
     function quickCalcTWD_Page() {
       let krw = document.getElementById('quick-krw').value;
       document.getElementById('quick-twd').value = krw ? Math.round(krw * currentRate).toLocaleString() : '0';
     }
-
     async function fetchSeoulWeather() {
       try {
         const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
@@ -269,21 +253,6 @@ window.addEventListener('load', () => {
         document.getElementById('weather-info').innerHTML = `📍首爾即時：${icon} ${temp}°C`;
       } catch (e) { document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; }
     }
-
-    let startX = 0, startY = 0;
-    const swipePage = document.getElementById('page-itinerary');
-    swipePage.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive: true});
-    swipePage.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - startX;
-      const dy = Math.abs(e.changedTouches[0].clientY - startY);
-      if (swipePage.classList.contains('active-section') && Math.abs(dx) > dy && Math.abs(dx) > 70) {
-        let dates = [...new Set(globalData.itinerary.concat(globalData.routes).map(r => r[1]))].filter(d => d).sort();
-        let idx = dates.indexOf(currentSelectedDate);
-        if (dx < 0 && idx < dates.length - 1) filterItinerary(dates[idx+1], document.querySelectorAll('.date-tab')[idx+1]);
-        else if (dx > 0 && idx > 0) filterItinerary(dates[idx-1], document.querySelectorAll('.date-tab')[idx-1]);
-      }
-    }, {passive: true});
-
     function filterItinerary(date, el) {
       if (currentSelectedDate === date && el && el.classList.contains('active')) return;
       currentSelectedDate = date;
@@ -298,18 +267,6 @@ window.addEventListener('load', () => {
       }).join('');
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted opacity-50">今日暫無行程規劃</p>';
     }
-
-    fetchSeoulWeather();
-    fetch(GAS_URL).then(res => res.json()).then(data => {
-      setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000);
-      globalData = data; currentRate = data.rate;
-      document.getElementById('current-rate').innerText = currentRate.toFixed(4);
-      let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
-      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
-      if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
-      updateList(data);
-    });
-
     function updateList(data) {
       let total = 0;
       let expHtml = data.expenses.slice().reverse().map(row => {
@@ -325,7 +282,6 @@ window.addEventListener('load', () => {
       document.getElementById('total-twd').innerText = total.toLocaleString();
       document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center py-4 text-muted small">尚無支出紀錄</p>';
     }
-
     function submitExpense() {
       let btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "儲存中...";
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
@@ -336,19 +292,18 @@ window.addEventListener('load', () => {
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
       });
     }
-
     function removeExpense(id) {
       if(!confirm("確定刪除此筆記帳？")) return;
-      document.getElementById('loading').style.display='flex';
+      document.getElementById('app-loader').style.display='flex'; // 復用 loader 當刪除時的等待畫面
+      document.getElementById('app-loader').style.opacity='1';
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNum: id })})
-      .then(r => r.json()).then(d => { updateList(d); document.getElementById('loading').style.display='none'; });
+      .then(r => r.json()).then(d => { updateList(d); hideLoader(); });
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
     }
   </script>
-  <script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js');
-  }
-</script>
 </body>
 </html>
 
