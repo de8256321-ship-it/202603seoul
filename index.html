@@ -26,23 +26,18 @@
       margin: 0; padding: 0; width: 100%; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
     }
 
-    /* 🌸 正確的圖 3 載入畫面樣式 */
-    #loading-screen {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(180deg, #FFD1DC 0%, #FFB7C5 100%);
-      display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999;
-      transition: opacity 0.8s ease;
+    /* 你最喜歡的 🌸 Emoji 啟動畫面樣式 */
+    .loading-screen { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; 
+      transition: opacity 0.6s ease;
     }
-    .loader-icon { width: 100px; height: auto; margin-bottom: 25px; animation: soft-pulse 2s infinite ease-in-out; }
-    .loader-title { color: white; font-family: sans-serif; letter-spacing: 8px; font-size: 2.2rem; margin: 0; font-weight: bold; }
-    .loader-subtitle { color: white; font-family: sans-serif; opacity: 0.9; margin-top: 15px; font-style: italic; font-size: 1.1rem; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     
-    @keyframes soft-pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    #main-app { display: none; } /* 先隱藏主程式 */
 
-    /* 主內容隱藏邏輯 */
-    #main-app { display: none; }
-
-    /* 頂部導航與卡片樣式 */
+    /* 原有的 UI 樣式 */
     .fixed-header { position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; background-color: var(--soft-pink); padding-top: env(safe-area-inset-top); box-shadow: 0 5px 15px rgba(0,0,0,0.02); }
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.4rem; letter-spacing: 1px; }
@@ -64,10 +59,12 @@
 </head>
 <body>
 
-  <div id="loading-screen">
-    <img src="sakura-icon.png" class="loader-icon" alt="Sakura">
-    <h1 class="loader-title">SEOUL 2026</h1>
-    <p class="loader-subtitle">please wait..</p>
+  <div id="loading" class="loading-screen">
+    <div class="text-center">
+      <div style="font-size: 5rem; animation: pulse 2s infinite;">🌸</div>
+      <h2 class="fw-bold mt-3" style="color: white; letter-spacing: 5px;">SEOUL</h2>
+      <div class="mt-2" style="color: white; opacity: 0.8; letter-spacing: 2px;">2026 CHERRY BLOSSOM</div>
+    </div>
   </div>
 
   <div id="main-app">
@@ -92,12 +89,14 @@
         <div class="pink-card">
           <div class="row g-2 mb-3">
             <div class="col-4">
-              <select id="expense-category" class="form-select form-select-sm-custom">
+              <select id="expense-category" class="form-select" style="border-radius:15px; border:2px solid #fff5f7; padding:12px;">
                 <option value="飲食">🍽️ 飲食</option><option value="交通">🚇 交通</option>
                 <option value="購物">🛍️ 購物</option><option value="娛樂">🎟️ 娛樂</option><option value="其他">📌 其他</option>
               </select>
             </div>
-            <div class="col-8"><input type="text" id="expense-item" class="form-control form-control-lg" placeholder="支出項目"></div>
+            <div class="col-8">
+              <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="支出項目">
+            </div>
           </div>
           <div class="row g-2 mb-4">
             <div class="col-7">
@@ -118,13 +117,13 @@
     <div id="page-exchange" class="section">
       <div style="padding: 30px 15px 120px;">
         <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">快速換算</h3>
-        <div class="pink-card text-center mb-4" style="background:#fff9fa;">
+        <div class="pink-card text-center mb-4">
           <h4 class="fw-bold mb-0" style="color: var(--sakura-pink);">1 KRW = <span id="current-rate">--</span> TWD</h4>
         </div>
         <div class="pink-card">
           <label class="form-label fw-bold small">輸入韓元 (KRW)</label>
           <input type="number" id="quick-krw" class="form-control form-control-lg mb-4" oninput="quickCalcTWD_Page()">
-          <input type="text" id="quick-twd" class="form-control form-control-lg text-danger fw-bold bg-light" readonly>
+          <input type="text" id="quick-twd" class="form-control form-control-lg text-danger fw-bold bg-light" readonly placeholder="折合台幣">
         </div>
       </div>
     </div>
@@ -142,13 +141,14 @@
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec'; 
     let globalData = { itinerary: [], routes: [] }, currentRate = 0.023, currentSelectedDate = "";
 
+    // 隱藏載入畫面邏輯
     function hideLoader() {
-      const loader = document.getElementById('loading-screen');
+      const loader = document.getElementById('loading');
       const app = document.getElementById('main-app');
       app.style.display = 'block';
       setTimeout(() => {
         loader.style.opacity = '0';
-        setTimeout(() => { loader.style.display = 'none'; }, 800);
+        setTimeout(() => { loader.style.display = 'none'; }, 600);
       }, 1000);
     }
 
@@ -166,7 +166,7 @@
 
     function quickCalcTWD_Page() {
       let krw = document.getElementById('quick-krw').value;
-      document.getElementById('quick-twd').value = krw ? '≈ NT$ ' + Math.round(krw * currentRate).toLocaleString() : '';
+      document.getElementById('quick-twd').value = krw ? 'NT$ ' + Math.round(krw * currentRate).toLocaleString() : '';
     }
 
     async function fetchSeoulWeather() {
@@ -178,6 +178,7 @@
       } catch (e) { document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; }
     }
 
+    // 抓取 GAS 資料
     fetch(GAS_URL).then(res => res.json()).then(data => {
       globalData = data; currentRate = data.rate;
       document.getElementById('current-rate').innerText = currentRate.toFixed(4);
@@ -185,10 +186,9 @@
       document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div>DAY ${i+1}</div><div>${d}</div></div>`).join('');
       if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
       updateList(data);
-      hideLoader(); // 資料抓完才關掉圖 3 畫面
+      hideLoader(); // 資料載入完畢，關閉 🌸 畫面
     });
 
-    // ... 其餘邏輯 (filterItinerary, updateList, submitExpense, removeExpense) 保持不變 ...
     function filterItinerary(date, el) {
       currentSelectedDate = date;
       document.querySelectorAll('.date-tab').forEach(t => t.classList.remove('active'));
@@ -208,10 +208,7 @@
         total += twd;
         return `<div class="pink-card d-flex justify-content-between align-items-center mb-2">
           <div><div class="small text-muted">${row[0]} | ${row[1]}</div><div class="fw-bold">${row[2]}</div></div>
-          <div class="text-end">
-            <div class="text-danger fw-bold">$${twd.toLocaleString()}</div>
-            <div class="text-muted small">₩${Number(row[3]).toLocaleString()}</div>
-          </div>
+          <div class="text-end"><div class="text-danger fw-bold">$${twd.toLocaleString()}</div><div class="text-muted small">₩${Number(row[3]).toLocaleString()}</div></div>
         </div>`;
       }).join('');
       document.getElementById('total-twd').innerText = total.toLocaleString();
@@ -219,11 +216,11 @@
     }
 
     function submitExpense() {
-      let btn = document.getElementById('submit-btn'); btn.disabled = true;
+      let btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "儲存中...";
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
         action: 'add', category: document.getElementById('expense-category').value, item: document.getElementById('expense-item').value,
         krwAmount: document.getElementById('expense-krw').value, twdAmount: document.getElementById('expense-twd').value
-      })}).then(r => r.json()).then(d => { updateList(d); btn.disabled = false; });
+      })}).then(r => r.json()).then(d => { updateList(d); btn.disabled = false; btn.innerText = "儲存這筆紀錄"; });
     }
 
     fetchSeoulWeather();
