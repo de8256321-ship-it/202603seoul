@@ -5,7 +5,7 @@
 
 const SETTINGS = {
     // 1. 請在此處填入你的 Google Apps Script 部署網址
-    API_URL: '你的_GOOGLE_APPS_SCRIPT_URL', 
+    API_URL: 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec', 
     CACHE_NAME: 'seoul_trip_cache_v1',
     // 2. 匯率設定 (目前的預設值，你可以根據實際匯率修改)
     KRW_TO_TWD: 0.023 
