@@ -40,10 +40,9 @@
     .active-section { display: block; }
 
     .fixed-header {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-      background-color: var(--soft-pink); padding-top: env(safe-area-inset-top);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.02);
-    }
+      position: sticky; /* 關鍵修改：讓它回到正常排版流 */top: 0;left: 0;width: 100%; 
+      z-index: 1000;background-color: var(--soft-pink); padding-top: env(safe-area-inset-top) ; box-shadow: 0 5px 15px rgba(0,0,0,0.02) ;
+}
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.4rem; letter-spacing: 1px; }
 
