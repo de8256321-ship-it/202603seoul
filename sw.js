@@ -1,48 +1,28 @@
-// sw.js - 首爾櫻花祭 2026 專用高速快取版
-const CACHE_NAME = 'seoul-2026-v1'; // 更新內容時改為 v2 即可強制刷新
+// 在 index.html 或你的主要 JS 檔案中
+async function fetchSheetData() {
+  const cacheKey = 'seoul_trip_data';
+  
+  // 1. 優先從本地快取抓取資料，實現「秒開」
+  const cachedData = localStorage.getItem(cacheKey);
+  if (cachedData) {
+    renderUI(JSON.parse(cachedData)); // 馬上用舊資料畫出畫面
+  } else {
+    showLoadingSpinner(); // 只有第一次完全沒快取時，才顯示載入轉圈圈
+  }
 
-// 列出你所有想要「秒開」的檔案
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './sakura-icon.png',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@1.1/font/jf-openhuninn.css'
-];
-
-// 1. 安裝：將檔案寫入手機存儲
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('🌸 櫻花快取已準備就緒');
-      return cache.addAll(urlsToCache);
-    })
-  );
-});
-
-// 2. 攔截請求：優先從手機讀取（這是變快的關鍵！）
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // 如果快取裡有，直接給它（秒開）；沒有才去網路抓
-      return response || fetch(event.request);
-    })
-  );
-});
-
-// 3. 激活：清理舊版本快取
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('🧹 清理過期快取');
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
-});
+  // 2. 背景非同步向 Google Sheets 請求最新資料
+  try {
+    const response = await fetch('你的_GOOGLE_SHEET_API_URL');
+    const newData = await response.json();
+    
+    // 3. 儲存最新資料到本地端
+    localStorage.setItem(cacheKey, JSON.stringify(newData));
+    
+    // 4. 更新畫面 (如果資料有變動，畫面會自動刷新)
+    renderUI(newData);
+  } catch (error) {
+    console.error('無法連線至 Google Sheets，保持顯示離線快取資料', error);
+  } finally {
+    hideLoadingSpinner();
+  }
+}
