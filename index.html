@@ -16,23 +16,37 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <style>
-    :root { --sakura-pink: #FFB7C5; --soft-pink: #FFF0F5; --text-color: #4A4A4A; }
+  :root { --sakura-pink: #FFB7C5; --soft-pink: #FFF0F5; --text-color: #4A4A4A; }
     
+    /* 🌸 1. 徹底鎖死外層，解決下拉橡皮筋問題 */
     html, body { 
       background-color: var(--soft-pink); 
-      /* 設定全局字體：Gaegu 優先，中文用粉圓體 */
       font-family: 'Gaegu', 'jf-openhuninn', sans-serif; 
       color: var(--text-color); 
-      margin: 0; padding: 0; width: 100%; overflow-x: hidden;
-      overscroll-behavior-y: none; /* 🌸 新增：鎖住頁面，不讓它能往下拉出背景橡皮筋效果 */
+      margin: 0; padding: 0; 
+      width: 100%; height: 100vh; /* 固定螢幕高度 */
+      overflow: hidden; /* 絕對隱藏全局滾動軸，禁止下拉彈跳 */
     }
 
     /* 標題與重點文字加粗 Gaegu */
     .app-title, .h2, h3, h4, .fw-bold { font-family: 'Gaegu', 'jf-openhuninn', sans-serif; font-weight: 700; }
 
+    /* 🌸 2. 讓每個頁面變成獨立可滾動的區塊 */
+    .section { 
+      display: none; 
+      height: 100vh; 
+      overflow-y: auto; /* 只有這裡可以滾動 */
+      -webkit-overflow-scrolling: touch; /* 讓手機滑動順滑 */
+    }
+    .active-section { display: block; }
+
+    /* 🌸 3. 標頭設定 sticky 讓它吸附在可滾動區塊的頂部 */
     .fixed-header {
       position: sticky; 
-      top: 0; left: 0; width: 100%; z-index: 1000; background-color: var(--soft-pink); padding-top: env(safe-area-inset-top); box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+      top: 0; left: 0; width: 100%; z-index: 1000; 
+      background-color: var(--soft-pink); 
+      padding-top: env(safe-area-inset-top); 
+      box-shadow: 0 5px 15px rgba(0,0,0,0.02);
     }
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { color: #ff8fa3; font-size: 1.8rem; letter-spacing: 1px; }
@@ -43,7 +57,6 @@
       font-weight: bold; display: inline-block; margin-top: 5px;
     }
 
-    /* 🌸 修改：將 padding 的第三個數值(底部)從 15px 改為 5px，減少與下方卡片的距離 */
     .date-tabs-container { display: flex; overflow-x: auto; gap: 10px; padding: 10px 15px 5px; white-space: nowrap; scrollbar-width: none; }
     .date-tabs-container::-webkit-scrollbar { display: none; }
     .date-tab { 
@@ -53,8 +66,10 @@
     }
     .date-tab.active { background: var(--sakura-pink); color: white; box-shadow: 0 4px 10px rgba(255,183,197,0.3); }
 
-    /* 🌸 修改：將 padding 的第一個數值(頂部)從 135px 改為 0px，讓卡片直接貼齊上方 */
-    .content-area { padding: 0px 15px 120px; min-height: 100vh; }
+    /* 🌸 4. 徹底移除頂部 Padding，讓卡片緊貼日期列 */
+    .content-area { 
+      padding: 10px 15px 120px; /* 頂部只留 10px 剛剛好的呼吸空間 */
+    }
     .pink-card { background: white; border-radius: 22px; border: none; box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; }
     
     .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-bottom: calc(env(safe-area-inset-bottom) + 5px); }
@@ -65,8 +80,6 @@
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; font-size: 1.2rem; }
 
     .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-    .section { display: none; }
-    .active-section { display: block; }
   </style>
 </head>
 <body>
