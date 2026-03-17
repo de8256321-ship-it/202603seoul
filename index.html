@@ -9,11 +9,11 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFB7C5">
-  
+
+  <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
-  <link rel="manifest" href='data:application/manifest+json,{"name":"首爾賞櫻","short_name":"首爾賞櫻","display":"standalone","background_color":"#FFF0F5","theme_color":"#FFB7C5","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🌸%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg+xml"},{"src":"data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E🌸%3C/text%3E%3C/svg%3E","sizes":"512x512","type":"image/svg+xml"}]}'>
-
+ 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@1.1/font/jf-openhuninn.css" rel="stylesheet">
   
@@ -23,8 +23,6 @@
     html, body { 
       background-color: var(--soft-pink); font-family: 'jf-openhuninn', sans-serif; color: var(--text-color); 
       margin: 0; padding: 0; width: 100%; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
-      /* ★ 封印手機瀏覽器的下拉橡皮筋回彈特效 ★ */
-      overscroll-behavior-y: none; 
     }
 
     .fixed-header {
@@ -32,27 +30,25 @@
       background-color: var(--soft-pink); padding-top: env(safe-area-inset-top);
       box-shadow: 0 5px 15px rgba(0,0,0,0.02);
     }
-    .app-header { text-align: center; padding: 10px 0 0px; }
-    .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.3rem; letter-spacing: 1px; }
+    .app-header { text-align: center; padding: 15px 0 5px; }
+    .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.4rem; letter-spacing: 1px; }
 
     .weather-widget { 
       background-color: rgba(255,183,197,0.4); color: #000000; 
-      padding: 4px 18px; border-radius: 25px; font-size: 0.8rem; 
-      font-weight: bold; display: inline-block; margin-top: 2px;
+      padding: 6px 20px; border-radius: 25px; font-size: 0.85rem; 
+      font-weight: bold; display: inline-block; margin-top: 5px;
     }
 
-    .date-tabs-container { display: flex; overflow-x: auto; gap: 10px; padding: 8px 15px 10px; white-space: nowrap; scrollbar-width: none; }
+    .date-tabs-container { display: flex; overflow-x: auto; gap: 10px; padding: 10px 15px 15px; white-space: nowrap; scrollbar-width: none; }
     .date-tabs-container::-webkit-scrollbar { display: none; }
     .date-tab { 
       display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; 
-      border: 1.5px solid var(--sakura-pink); color: var(--sakura-pink); border-radius: 18px; padding: 6px 18px; 
-      font-weight: bold; flex-shrink: 0; min-width: 80px;
+      border: 1.5px solid var(--sakura-pink); color: var(--sakura-pink); border-radius: 18px; padding: 8px 22px; 
+      font-weight: bold; flex-shrink: 0; min-width: 85px;
     }
     .date-tab.active { background: var(--sakura-pink); color: white; box-shadow: 0 4px 10px rgba(255,183,197,0.3); }
 
-    /* 既然不是 padding 的問題，我把它調回舒適的 135px，確保第一張卡片不會被標題遮住 */
-    .content-area { padding: 135px 15px 120px; min-height: 100vh; }
-    
+    .content-area { padding: 175px 15px 120px; min-height: 100vh; }
     .fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -64,10 +60,19 @@
     .nav-btn.active { color: var(--sakura-pink); background: #fff8f9; border-radius: 12px; }
 
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(255,183,197,0.3); }
+    
+    /* 輸入框樣式 */
     .form-control-lg { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 12px; font-size: 0.95rem; text-align: center; }
-    .form-select-sm-custom { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 12px 8px; font-size: 0.95rem; width: 100%; height: 100%; }
+    
+    /* 類別選單優化 */
+    .form-select-sm-custom { 
+      border-radius: 15px !important; border: 2px solid #fff5f7; 
+      padding: 12px 8px; font-size: 0.95rem; width: 100%; height: 100%;
+    }
+    
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
 
+    /* 職業級啟動畫面 */
     .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     .section { display: none; }
@@ -103,6 +108,7 @@
         <div class="h2 fw-bold mb-0">NT$ <span id="total-twd">0</span></div>
       </div>
       <div class="pink-card">
+        
         <div class="row g-2 mb-3">
           <div class="col-4">
             <select id="expense-category" class="form-select form-select-sm-custom">
@@ -114,6 +120,7 @@
             <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="請輸入支出項目">
           </div>
         </div>
+
         <div class="row g-2 mb-4">
           <div class="col-5">
             <label class="small fw-bold mb-1 d-block text-center" style="color:#ff8fa3;">台幣 NT$</label>
@@ -121,9 +128,10 @@
           </div>
           <div class="col-7">
             <label class="small fw-bold mb-1 d-block text-center text-muted">韓元 ₩</label>
-            <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入金額" oninput="autoCalcTWD()">
+            <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入韓元" oninput="autoCalcTWD()">
           </div>
         </div>
+        
         <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存這筆紀錄</button>
       </div>
       <div id="expense-list"></div>
