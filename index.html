@@ -29,11 +29,10 @@
     /* 標題與重點文字加粗 Gaegu */
     .app-title, .h2, h3, h4, .fw-bold { font-family: 'Gaegu', 'jf-openhuninn', sans-serif; font-weight: 700; }
 
-    .fixed-header {
-      position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
-      background-color: var(--soft-pink); padding-top: env(safe-area-inset-top);
-      box-shadow: 0 5px 15px rgba(0,0,0,0.02);
-    }
+.fixed-header {
+  position: sticky; /* 改成 sticky，它會佔據空間，但捲動時吸在頂部 */
+  top: 0; left: 0; width: 100%; z-index: 1000; background-color: var(--soft-pink); padding-top: env(safe-area-inset-top); box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+}
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { color: #ff8fa3; font-size: 1.8rem; letter-spacing: 1px; }
 
