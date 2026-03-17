@@ -20,6 +20,10 @@
   <style>
     :root { --sakura-pink: #FFB7C5; --soft-pink: #FFF0F5; --text-color: #4A4A4A; }
     
+    /* 🌸 隱藏全站的滾動條(拉桿)但保留滑動功能 */
+    ::-webkit-scrollbar { display: none; /* Chrome, Safari, Opera */ }
+    * { -ms-overflow-style: none; /* IE and Edge */ scrollbar-width: none; /* Firefox */ }
+
     html, body { 
       background-color: var(--soft-pink); font-family: 'jf-openhuninn', sans-serif; color: var(--text-color); 
       margin: 0; padding: 0; width: 100%; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
