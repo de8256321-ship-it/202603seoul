@@ -10,6 +10,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFB7C5">
 
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
@@ -23,18 +26,15 @@
     ::-webkit-scrollbar { display: none; }
     * { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* 🌸 終極鎖定：position: fixed 徹底拔除外層網頁滾動能力 */
+    /* 物理鎖定防下拉 */
     html, body { 
       background-color: var(--soft-pink); font-family: 'jf-openhuninn', sans-serif; color: var(--text-color); 
       margin: 0; padding: 0; width: 100%; height: 100%;
-      position: fixed; /* 殺死外層彈跳 */
-      overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
+      position: fixed; overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
     }
 
-    /* 🌸 讓各頁面變成獨立容器，並設定絕對定位 */
     .section { 
-      display: none; 
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
       overflow-y: auto; overscroll-behavior-y: none; -webkit-overflow-scrolling: touch;
     }
     .active-section { display: block; }
@@ -85,7 +85,13 @@
     
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
 
-    .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+    /* 🌸 加入淡出動畫，讓載入畫面消失得更平滑 */
+    .loading-screen { 
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+      background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; 
+      transition: opacity 0.3s ease-out; /* 平滑淡出 */
+    }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
   </style>
 </head>
@@ -93,7 +99,7 @@
 
   <div id="loading" class="loading-screen">
     <div class="text-center">
-      <div style="font-size: 5rem; animation: pulse 2s infinite;">🌸</div>
+      <div style="font-size: 5rem; animation: pulse 1.5s infinite;">🌸</div>
       <h2 class="fw-bold mt-3" style="color: white; letter-spacing: 5px;">SEOUL</h2>
       <div class="mt-2" style="color: white; opacity: 0.8; letter-spacing: 2px;">2026 CHERRY BLOSSOM</div>
     </div>
@@ -175,7 +181,7 @@
 
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec'; 
-    let globalData = { itinerary: [], routes: [] }, currentRate = 0.023, currentSelectedDate = "";
+    let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.023, currentSelectedDate = "";
 
     function showPage(pageId, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
@@ -205,13 +211,13 @@
       } catch (e) { document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; }
     }
 
-    // 🌸 欺騙瀏覽器 Hack：永遠不讓滾動條等於 0，徹底消滅橡皮筋回彈
+    // 欺騙瀏覽器 Hack：永遠不讓滾動條等於 0
     document.querySelectorAll('.section').forEach(sec => {
       sec.addEventListener('touchstart', function() {
         if (sec.scrollTop === 0) {
-          sec.scrollTop = 1; // 頂部往下推 1px
+          sec.scrollTop = 1; 
         } else if (sec.scrollTop + sec.offsetHeight === sec.scrollHeight) {
-          sec.scrollTop -= 1; // 底部往上推 1px
+          sec.scrollTop -= 1; 
         }
       }, { passive: true });
     });
@@ -245,20 +251,9 @@
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted opacity-50">今日暫無行程規劃</p>';
     }
 
-    fetchSeoulWeather();
-    fetch(GAS_URL).then(res => res.json()).then(data => {
-      setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000);
-      globalData = data; currentRate = data.rate;
-      document.getElementById('current-rate').innerText = currentRate.toFixed(4);
-      let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
-      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
-      if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
-      updateList(data);
-    });
-
     function updateList(data) {
       let total = 0;
-      let expHtml = data.expenses.slice().reverse().map(row => {
+      let expHtml = (data.expenses || []).slice().reverse().map(row => {
         let twd = parseFloat(row[4]) || Math.round(row[3] * currentRate);
         total += twd;
         return `<div class="pink-card d-flex justify-content-between align-items-center mb-2" style="padding: 15px 20px;">
@@ -272,12 +267,62 @@
       document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center py-4 text-muted small">尚無支出紀錄</p>';
     }
 
+    // 🌸 核心加速：渲染資料與關閉載入畫面的共用函數
+    function renderApp(data) {
+      globalData = data; 
+      currentRate = data.rate || 0.023;
+      document.getElementById('current-rate').innerText = currentRate.toFixed(4);
+      
+      let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
+      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
+      
+      // 保持目前的日期標籤，或是選擇第一天
+      if (dates.length > 0 && !currentSelectedDate) {
+        filterItinerary(dates[0], document.querySelector('.date-tab'));
+      } else if (currentSelectedDate) {
+        let currentTab = Array.from(document.querySelectorAll('.date-tab')).find(el => el.innerText.includes(currentSelectedDate));
+        if(currentTab) filterItinerary(currentSelectedDate, currentTab);
+      }
+      
+      updateList(data);
+    }
+
+    function hideLoading() {
+      const loading = document.getElementById('loading');
+      loading.style.opacity = '0';
+      setTimeout(() => { loading.style.display = 'none'; }, 300); // 配合 CSS 動畫時間
+    }
+
+    // 🌸 加速魔法 2：本地快取機制 (Optimistic Rendering)
+    fetchSeoulWeather();
+    
+    // 1. 先嘗試從本機拿出舊資料秒速渲染
+    const cachedData = localStorage.getItem('seoulAppData');
+    if (cachedData) {
+      try {
+        renderApp(JSON.parse(cachedData));
+        hideLoading(); // 資料有了就秒關動畫
+      } catch (e) { console.error('Cache parsing error'); }
+    }
+
+    // 2. 在背景默默去 GAS 抓最新資料更新
+    fetch(GAS_URL).then(res => res.json()).then(data => {
+      // 將新資料存入快取
+      localStorage.setItem('seoulAppData', JSON.stringify(data));
+      renderApp(data); // 靜默更新畫面
+      if (!cachedData) hideLoading(); // 如果是第一次載入（沒有快取），在這裡關閉動畫
+    }).catch(err => {
+      console.error('Fetch error:', err);
+      if (!cachedData) hideLoading(); // 就算斷網失敗也要關閉動畫
+    });
+
     function submitExpense() {
       let btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "儲存中...";
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
         action: 'add', category: document.getElementById('expense-category').value, item: document.getElementById('expense-item').value,
         krwAmount: document.getElementById('expense-krw').value, twdAmount: document.getElementById('expense-twd').value
       })}).then(r => r.json()).then(d => {
+        localStorage.setItem('seoulAppData', JSON.stringify(d)); // 更新快取
         updateList(d); btn.disabled = false; btn.innerText = "儲存這筆紀錄";
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
       });
@@ -285,9 +330,13 @@
 
     function removeExpense(id) {
       if(!confirm("確定刪除此筆記帳？")) return;
-      document.getElementById('loading').style.display='flex';
+      document.getElementById('loading').style.display='flex'; document.getElementById('loading').style.opacity='1';
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNum: id })})
-      .then(r => r.json()).then(d => { updateList(d); document.getElementById('loading').style.display='none'; });
+      .then(r => r.json()).then(d => { 
+        localStorage.setItem('seoulAppData', JSON.stringify(d)); // 更新快取
+        updateList(d); 
+        hideLoading(); 
+      });
     }
     
     if ('serviceWorker' in navigator) {
