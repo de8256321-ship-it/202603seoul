@@ -23,15 +23,15 @@
     html, body { 
       background-color: var(--soft-pink); font-family: 'jf-openhuninn', sans-serif; color: var(--text-color); 
       margin: 0; padding: 0; width: 100%; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
+      /* ★ 封印手機瀏覽器的下拉橡皮筋回彈特效 ★ */
+      overscroll-behavior-y: none; 
     }
 
-    /* 固定頂部：減少 Padding 讓空間更緊湊 */
     .fixed-header {
       position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
       background-color: var(--soft-pink); padding-top: env(safe-area-inset-top);
       box-shadow: 0 5px 15px rgba(0,0,0,0.02);
     }
-    /* 這裡把 15px 改成 10px */
     .app-header { text-align: center; padding: 10px 0 0px; }
     .app-title { font-weight: 900; color: #ff8fa3; font-size: 1.3rem; letter-spacing: 1px; }
 
@@ -41,7 +41,6 @@
       font-weight: bold; display: inline-block; margin-top: 2px;
     }
 
-    /* 日期選單：減少上下間距 */
     .date-tabs-container { display: flex; overflow-x: auto; gap: 10px; padding: 8px 15px 10px; white-space: nowrap; scrollbar-width: none; }
     .date-tabs-container::-webkit-scrollbar { display: none; }
     .date-tab { 
@@ -51,8 +50,8 @@
     }
     .date-tab.active { background: var(--sakura-pink); color: white; box-shadow: 0 4px 10px rgba(255,183,197,0.3); }
 
-    /* ★ 關鍵：調整這裡的 130px 到 120px 或更低 ★ */
-    .content-area { padding: 125px 15px 120px; min-height: 100vh; }
+    /* 既然不是 padding 的問題，我把它調回舒適的 135px，確保第一張卡片不會被標題遮住 */
+    .content-area { padding: 135px 15px 120px; min-height: 100vh; }
     
     .fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
     @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -112,7 +111,7 @@
             </select>
           </div>
           <div class="col-8">
-            <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="支出項目">
+            <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="請輸入支出項目">
           </div>
         </div>
         <div class="row g-2 mb-4">
@@ -125,7 +124,7 @@
             <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入金額" oninput="autoCalcTWD()">
           </div>
         </div>
-        <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存紀錄</button>
+        <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存這筆紀錄</button>
       </div>
       <div id="expense-list"></div>
     </div>
@@ -157,7 +156,7 @@
   </nav>
 
   <script>
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec'; 
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec'; 
     let globalData = { itinerary: [], routes: [] }, currentRate = 0.023, currentSelectedDate = "";
 
     function showPage(pageId, btn) {
@@ -250,13 +249,13 @@
         action: 'add', category: document.getElementById('expense-category').value, item: document.getElementById('expense-item').value,
         krwAmount: document.getElementById('expense-krw').value, twdAmount: document.getElementById('expense-twd').value
       })}).then(r => r.json()).then(d => {
-        updateList(d); btn.disabled = false; btn.innerText = "儲存紀錄";
+        updateList(d); btn.disabled = false; btn.innerText = "儲存這筆紀錄";
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
       });
     }
 
     function removeExpense(id) {
-      if(!confirm("確定刪除？")) return;
+      if(!confirm("確定刪除此筆記帳？")) return;
       document.getElementById('loading').style.display='flex';
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNum: id })})
       .then(r => r.json()).then(d => { updateList(d); document.getElementById('loading').style.display='none'; });
