@@ -235,15 +235,7 @@
     }
 
     fetchSeoulWeather();
-    fetch(GAS_URL).then(res => res.json()).then(data => {
-      setTimeout(() => { document.getElementById('loading').style.display = 'none'; }, 1000);
-      globalData = data; currentRate = data.rate;
-      document.getElementById('current-rate').innerText = currentRate.toFixed(4);
-      let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
-      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
-      if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
-      updateList(data);
-    });
+   
 
     function updateList(data) {
       let total = 0;
