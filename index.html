@@ -10,10 +10,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFB7C5">
   
- <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
   <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>">
-
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/gh/justfont/open-huninn-font@1.1/font/jf-openhuninn.css" rel="stylesheet">
@@ -25,6 +24,20 @@
       background-color: var(--soft-pink); font-family: 'jf-openhuninn', sans-serif; color: var(--text-color); 
       margin: 0; padding: 0; width: 100%; overflow-x: hidden; -webkit-tap-highlight-color: transparent;
     }
+
+    /* 圖 3 的絕美漸層載入畫面 */
+    #app-loader {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(180deg, #FFD1DC 0%, #FFB7C5 100%);
+      display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999;
+      transition: opacity 0.6s ease;
+    }
+    .main-flower { width: 100px; height: auto; margin-bottom: 25px; }
+    .loader-title { color: white; font-family: 'Arial', sans-serif; letter-spacing: 8px; font-size: 2.2rem; margin: 0; font-weight: bold; }
+    .loader-subtitle { color: white; font-family: 'Arial', sans-serif; opacity: 0.9; margin-top: 15px; font-style: italic; font-size: 1.1rem; }
+
+    /* 主程式容器預設隱藏，避免載入時閃爍 */
+    #main-app-container { display: none; }
 
     .fixed-header {
       position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
@@ -57,40 +70,29 @@
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
     
     .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-bottom: calc(env(safe-area-inset-bottom) + 5px); }
-    .nav-btn { border: none; background: none; color: #bbb; font-weight: bold; font-size: 0.85rem; padding: 10px; flex: 1; }
+    .nav-btn { border: none; background: none; color: #bbb; font-weight: bold; font-size: 0.85rem; padding: 10px; flex: 1; transition: 0.2s; }
     .nav-btn.active { color: var(--sakura-pink); background: #fff8f9; border-radius: 12px; }
 
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(255,183,197,0.3); }
     
-    /* 輸入框樣式 */
     .form-control-lg { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 12px; font-size: 0.95rem; text-align: center; }
-    
-    /* 類別選單優化 */
-    .form-select-sm-custom { 
-      border-radius: 15px !important; border: 2px solid #fff5f7; 
-      padding: 12px 8px; font-size: 0.95rem; width: 100%; height: 100%;
-    }
-    
+    .form-select-sm-custom { border-radius: 15px !important; border: 2px solid #fff5f7; padding: 12px 8px; font-size: 0.95rem; width: 100%; height: 100%; }
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
 
-    /* 職業級啟動畫面 */
-    .loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #FFF0F5 0%, #FFB7C5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
     .section { display: none; }
     .active-section { display: block; }
   </style>
 </head>
-  
 <body>
+
   <div id="app-loader">
-    <div class="loader-inner">
-      <img src="sakura-icon.png" class="main-flower" alt="SEOUL 2026">
-      <h1 class="loader-title">SEOUL 2026</h1>
-      <p class="loader-subtitle">please wait..</p>
-    </div>
+    <img src="sakura-icon.png" class="main-flower" alt="SEOUL 2026">
+    <h1 class="loader-title">SEOUL 2026</h1>
+    <p class="loader-subtitle">please wait..</p>
   </div>
 
-  <div id="main-app-container" style="display: none;">
+  <div id="main-app-container">
+    
     <div id="page-itinerary" class="section active-section">
       <div class="fixed-header">
         <div class="app-header">
@@ -121,16 +123,18 @@
               <input type="text" id="expense-item" class="form-control form-control-lg" placeholder="請輸入支出項目">
             </div>
           </div>
+
           <div class="row g-2 mb-4">
-            <div class="col-5">
-              <label class="small fw-bold mb-1 d-block text-center" style="color:#ff8fa3;">台幣 NT$</label>
-              <input type="number" id="expense-twd" class="form-control form-control-lg text-danger fw-bold" placeholder="0">
-            </div>
             <div class="col-7">
-              <label class="small fw-bold mb-1 d-block text-center text-muted">韓元 ₩</label>
+              <label class="small fw-bold mb-1 d-block text-center text-muted">輸入韓元 ₩</label>
               <input type="number" id="expense-krw" class="form-control form-control-lg" placeholder="輸入韓元" oninput="autoCalcTWD()">
             </div>
+            <div class="col-5">
+              <label class="small fw-bold mb-1 d-block text-center" style="color:#ff8fa3;">記帳台幣 NT$</label>
+              <input type="number" id="expense-twd" class="form-control form-control-lg text-danger fw-bold bg-light" placeholder="0" readonly>
+            </div>
           </div>
+          
           <button onclick="submitExpense()" class="btn btn-pink" id="submit-btn">儲存這筆紀錄</button>
         </div>
         <div id="expense-list"></div>
@@ -163,37 +167,22 @@
     </nav>
   </div>
 
-  <style>
-    /* 載入畫面樣式：確保蓋掉一切且顏色符合 */
-    #app-loader {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(180deg, #FFD1DC 0%, #FFB7C5 100%);
-      display: flex; justify-content: center; align-items: center; z-index: 99999;
-      transition: opacity 0.6s ease;
-    }
-    .loader-inner { text-align: center; }
-    .main-flower { width: 100px; height: auto; margin-bottom: 25px; }
-    .loader-title { color: white; font-family: sans-serif; letter-spacing: 8px; font-size: 2.2rem; margin: 0; font-weight: bold; }
-    .loader-subtitle { color: white; font-family: sans-serif; opacity: 0.9; margin-top: 15px; font-style: italic; font-size: 1.1rem; }
-  </style>
-
   <script>
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec'; 
     let globalData = { itinerary: [], routes: [] }, currentRate = 0.023, currentSelectedDate = "";
 
-    // 整合後的載入完成處理
+    // 載入完成並淡出畫面
     function hideLoader() {
       const loader = document.getElementById('app-loader');
       const mainApp = document.getElementById('main-app-container');
       
-      mainApp.style.display = 'block'; // 顯示內容
+      mainApp.style.display = 'block'; 
       setTimeout(() => {
         loader.style.opacity = '0';
         setTimeout(() => { loader.style.display = 'none'; }, 600);
-      }, 800); // 讓美美的載入畫面至少停留一下
+      }, 800);
     }
 
-    // 頁面切換
     function showPage(pageId, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
       document.getElementById('page-' + pageId).classList.add('active-section');
@@ -201,48 +190,17 @@
       btn.classList.add('active'); window.scrollTo(0,0);
     }
 
-    // 初始化與資料抓取
-    async function initApp() {
-      fetchSeoulWeather();
-      
-      try {
-        const response = await fetch(GAS_URL);
-        const data = await response.json();
-        
-        globalData = data; 
-        currentRate = data.rate;
-        document.getElementById('current-rate').innerText = currentRate.toFixed(4);
-        
-        let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
-        document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => 
-          `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)">
-            <div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div>
-            <div>${d}</div>
-          </div>`).join('');
-        
-        if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
-        updateList(data);
-        
-        // 資料抓完後隱藏載入畫面
-        hideLoader();
-      } catch (e) {
-        console.error("載入失敗:", e);
-        hideLoader(); // 即使失敗也隱藏載入畫面，讓使用者能用離線快取的內容
-      }
-    }
-
-    // 啟動程式
-    initApp();
-
-    // --- 以下保留你原本的邏輯代碼 (Weather, Calc, filter, updateList 等) ---
+    // 單向韓幣換算台幣
     function autoCalcTWD() {
       let krw = document.getElementById('expense-krw').value;
       document.getElementById('expense-twd').value = krw ? Math.round(krw * currentRate) : '';
     }
+
     function quickCalcTWD_Page() {
       let krw = document.getElementById('quick-krw').value;
       document.getElementById('quick-twd').value = krw ? Math.round(krw * currentRate).toLocaleString() : '0';
     }
+
     async function fetchSeoulWeather() {
       try {
         const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current_weather=true');
@@ -253,6 +211,21 @@
         document.getElementById('weather-info').innerHTML = `📍首爾即時：${icon} ${temp}°C`;
       } catch (e) { document.getElementById('weather-info').innerHTML = `📍首爾：賞櫻愉快 🌸`; }
     }
+
+    let startX = 0, startY = 0;
+    const swipePage = document.getElementById('page-itinerary');
+    swipePage.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive: true});
+    swipePage.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      const dy = Math.abs(e.changedTouches[0].clientY - startY);
+      if (swipePage.classList.contains('active-section') && Math.abs(dx) > dy && Math.abs(dx) > 70) {
+        let dates = [...new Set(globalData.itinerary.concat(globalData.routes).map(r => r[1]))].filter(d => d).sort();
+        let idx = dates.indexOf(currentSelectedDate);
+        if (dx < 0 && idx < dates.length - 1) filterItinerary(dates[idx+1], document.querySelectorAll('.date-tab')[idx+1]);
+        else if (dx > 0 && idx > 0) filterItinerary(dates[idx-1], document.querySelectorAll('.date-tab')[idx-1]);
+      }
+    }, {passive: true});
+
     function filterItinerary(date, el) {
       if (currentSelectedDate === date && el && el.classList.contains('active')) return;
       currentSelectedDate = date;
@@ -267,6 +240,7 @@
       }).join('');
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted opacity-50">今日暫無行程規劃</p>';
     }
+
     function updateList(data) {
       let total = 0;
       let expHtml = data.expenses.slice().reverse().map(row => {
@@ -282,6 +256,7 @@
       document.getElementById('total-twd').innerText = total.toLocaleString();
       document.getElementById('expense-list').innerHTML = expHtml || '<p class="text-center py-4 text-muted small">尚無支出紀錄</p>';
     }
+
     function submitExpense() {
       let btn = document.getElementById('submit-btn'); btn.disabled = true; btn.innerText = "儲存中...";
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({
@@ -292,18 +267,44 @@
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
       });
     }
+
     function removeExpense(id) {
       if(!confirm("確定刪除此筆記帳？")) return;
-      document.getElementById('app-loader').style.display='flex'; // 復用 loader 當刪除時的等待畫面
+      document.getElementById('app-loader').style.display='flex';
       document.getElementById('app-loader').style.opacity='1';
       fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowNum: id })})
       .then(r => r.json()).then(d => { updateList(d); hideLoader(); });
     }
 
+    // 初始化程式
+    async function initApp() {
+      fetchSeoulWeather();
+      try {
+        const response = await fetch(GAS_URL);
+        const data = await response.json();
+        globalData = data; currentRate = data.rate;
+        document.getElementById('current-rate').innerText = currentRate.toFixed(4);
+        
+        let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
+        document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => 
+          `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)">
+            <div style="font-size: 0.6rem; opacity:0.6; margin-bottom:2px;">DAY ${i+1}</div><div>${d}</div>
+          </div>`).join('');
+        
+        if(dates.length > 0) filterItinerary(dates[0], document.querySelector('.date-tab'));
+        updateList(data);
+        hideLoader();
+      } catch (e) {
+        console.error(e);
+        hideLoader(); // 失敗也隱藏畫面，避免卡死
+      }
+    }
+
+    initApp();
+
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
+      navigator.serviceWorker.register('sw.js');
     }
   </script>
 </body>
 </html>
-
