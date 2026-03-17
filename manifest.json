@@ -1,22 +1,20 @@
 {
-  "name": "首爾賞櫻 2026",
-  "short_name": "首爾賞櫻",
-  "start_url": "./index.html",
+  "short_name": "首爾櫻花",
+  "name": "首爾櫻花祭 2026",
   "display": "standalone",
-  "background_color": "#FFB7C5",
+  "start_url": "/",
+  "background_color": "#ffffff",
   "theme_color": "#FFB7C5",
   "icons": [
     {
-      "src": "sakura-icon.png",
+      "src": "/sakura-icon.png", 
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
+      "type": "image/png"
     },
     {
-      "src": "sakura-icon.png",
+      "src": "/sakura-icon.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ]
 }
