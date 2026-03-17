@@ -24,15 +24,16 @@
       font-family: 'Gaegu', 'jf-openhuninn', sans-serif; 
       color: var(--text-color); 
       margin: 0; padding: 0; width: 100%; overflow-x: hidden;
+      overscroll-behavior-y: none; /* 🌸 新增：鎖住頁面，不讓它能往下拉出背景橡皮筋效果 */
     }
 
     /* 標題與重點文字加粗 Gaegu */
     .app-title, .h2, h3, h4, .fw-bold { font-family: 'Gaegu', 'jf-openhuninn', sans-serif; font-weight: 700; }
 
-.fixed-header {
-  position: sticky; /* 改成 sticky，它會佔據空間，但捲動時吸在頂部 */
-  top: 0; left: 0; width: 100%; z-index: 1000; background-color: var(--soft-pink); padding-top: env(safe-area-inset-top); box-shadow: 0 5px 15px rgba(0,0,0,0.02);
-}
+    .fixed-header {
+      position: sticky; 
+      top: 0; left: 0; width: 100%; z-index: 1000; background-color: var(--soft-pink); padding-top: env(safe-area-inset-top); box-shadow: 0 5px 15px rgba(0,0,0,0.02);
+    }
     .app-header { text-align: center; padding: 15px 0 5px; }
     .app-title { color: #ff8fa3; font-size: 1.8rem; letter-spacing: 1px; }
 
@@ -42,7 +43,8 @@
       font-weight: bold; display: inline-block; margin-top: 5px;
     }
 
-    .date-tabs-container { display: flex; overflow-x: auto; gap: 10px; padding: 10px 15px 15px; white-space: nowrap; scrollbar-width: none; }
+    /* 🌸 修改：將 padding 的第三個數值(底部)從 15px 改為 5px，減少與下方卡片的距離 */
+    .date-tabs-container { display: flex; overflow-x: auto; gap: 10px; padding: 10px 15px 5px; white-space: nowrap; scrollbar-width: none; }
     .date-tabs-container::-webkit-scrollbar { display: none; }
     .date-tab { 
       display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; 
@@ -51,7 +53,8 @@
     }
     .date-tab.active { background: var(--sakura-pink); color: white; box-shadow: 0 4px 10px rgba(255,183,197,0.3); }
 
-   .content-area { padding: 135px 15px 120px; min-height: 100vh; }
+    /* 🌸 修改：將 padding 的第一個數值(頂部)從 135px 改為 0px，讓卡片直接貼齊上方 */
+    .content-area { padding: 0px 15px 120px; min-height: 100vh; }
     .pink-card { background: white; border-radius: 22px; border: none; box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; }
     
     .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-bottom: calc(env(safe-area-inset-bottom) + 5px); }
