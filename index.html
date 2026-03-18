@@ -57,12 +57,15 @@
     .pink-card { background: white; border-radius: 22px; border: none; box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; }
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
     
-    /* 🌸 升級版底部導航列 CSS */
-    .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-top: 10px; padding-bottom: calc(env(safe-area-inset-bottom) + 12px); box-shadow: 0 -4px 15px rgba(255,183,197,0.15); }
-    .nav-btn { border: none; background: none; padding: 12px; flex: 1; display: flex; justify-content: center; align-items: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-    .nav-btn.active { background: #fff8f9; border-radius: 22px; }
-    .nav-icon { width: 32px; height: 32px; opacity: 0.4; transition: all 0.3s ease; }
-    .nav-btn.active .nav-icon { opacity: 1; transform: scale(1.15); } /* 選中時放大並變亮 */
+    /* 🌸 升級版：圖文並茂導航列 CSS */
+    .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-top: 8px; padding-bottom: calc(env(safe-area-inset-bottom) + 8px); box-shadow: 0 -4px 15px rgba(255,183,197,0.15); }
+    .nav-btn { border: none; background: none; padding: 8px 5px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); gap: 4px; }
+    .nav-btn.active { background: #fff8f9; border-radius: 18px; }
+    .nav-icon { width: 24px; height: 24px; opacity: 0.45; transition: all 0.3s ease; }
+    .nav-text { font-size: 0.75rem; font-weight: bold; color: #bbb; transition: all 0.3s ease; }
+    /* 選中時的狀態變化 */
+    .nav-btn.active .nav-icon { opacity: 1; transform: scale(1.1); } 
+    .nav-btn.active .nav-text { color: var(--sakura-pink); }
 
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; }
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
@@ -185,12 +188,15 @@
     <div class="container-fluid d-flex justify-content-evenly">
       <button onclick="showPage('itinerary', this)" class="nav-btn active">
         <img src="images/luggage.png" class="nav-icon" alt="行程">
+        <span class="nav-text">行程</span>
       </button>
       <button onclick="showPage('budget', this)" class="nav-btn">
         <img src="images/dollar.png" class="nav-icon" alt="記帳">
+        <span class="nav-text">記帳</span>
       </button>
       <button onclick="showPage('exchange', this)" class="nav-btn">
         <img src="images/calculator.png" class="nav-icon" alt="匯率">
+        <span class="nav-text">匯率</span>
       </button>
     </div>
   </nav>
@@ -214,7 +220,6 @@
       });
     }
 
-    // 🌸 已經綁定你專屬的連線網址，不用再改了！
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwsKsVGg6TW9VybGQP2PtXJZIvBbQX7Uhyg5695fa3Pe-p6z67oHhgCfPck0yNMk3SJ/exec';
 
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
