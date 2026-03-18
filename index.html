@@ -76,9 +76,26 @@
     @keyframes slideInRight { from { opacity: 0; transform: translateX(30px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes slideInLeft { from { opacity: 0; transform: translateX(-30px); } to { opacity: 1; transform: translateX(0); } }
     
-    /* 客製化下拉選單樣式微調 */
     .dropdown-toggle::after { display: none; }
     .custom-option:hover, .custom-option:focus { background-color: #fff0f5; color: var(--sakura-pink); font-weight: bold; }
+
+    /* 🌸 專屬客製化超可愛刪除提示框樣式 */
+    .custom-modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 10000; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .custom-modal-box {
+      background: white; border-radius: 25px; padding: 30px 20px;
+      width: 85%; max-width: 320px; box-shadow: 0 10px 30px rgba(255, 183, 197, 0.4);
+      transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      text-align: center;
+    }
+    .custom-modal-overlay.show { opacity: 1; }
+    .custom-modal-overlay.show .custom-modal-box { transform: translateY(0) scale(1); }
+    .delete-icon-btn { transition: transform 0.1s; }
+    .delete-icon-btn:active { transform: scale(0.8); }
   </style>
 </head>
 <body>
@@ -110,16 +127,13 @@
       </div>
       <div class="pink-card">
         <div class="row g-2 mb-3">
-          
           <div class="col-4">
             <input type="hidden" id="expense-category" value="飲食">
-            
             <div class="dropdown w-100 h-100">
               <button class="btn w-100 h-100 d-flex justify-content-between align-items-center dropdown-toggle" type="button" id="categoryDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false" style="border-radius:15px; border: 2px solid #fff5f7; background: white; padding: 12px 8px; text-align: left; color: #4A4A4A; font-size: 0.95rem;">
                 <span id="category-display" class="d-flex align-items-center"><img src="https://cdn.jsdelivr.net/gh/de8256321-ship-it/202603seoul@main/food.png" width="22" style="margin-right:5px;"> 飲食</span>
                 <span class="opacity-50" style="font-size: 0.7rem;">▼</span>
               </button>
-              
               <ul class="dropdown-menu w-100" aria-labelledby="categoryDropdownBtn" style="border-radius: 15px; border: none; box-shadow: 0 4px 15px rgba(255,183,197,0.3); padding: 8px;">
                 <li><a class="dropdown-item custom-option py-2 d-flex align-items-center" href="#" data-value="飲食" style="border-radius: 10px;"><img src="https://cdn.jsdelivr.net/gh/de8256321-ship-it/202603seoul@main/food.png" width="22" style="margin-right:8px;"> 飲食</a></li>
                 <li><a class="dropdown-item custom-option py-2 d-flex align-items-center" href="#" data-value="交通" style="border-radius: 10px;"><img src="https://cdn.jsdelivr.net/gh/de8256321-ship-it/202603seoul@main/traffic.png" width="22" style="margin-right:8px;"> 交通</a></li>
@@ -171,6 +185,18 @@
     </div>
   </nav>
 
+  <div id="deleteConfirmModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+      <div style="font-size: 3rem; margin-bottom: 5px;">🥺</div>
+      <h4 class="fw-bold mb-2" style="color: #ff8fa3;">確定要刪除嗎？</h4>
+      <p class="text-muted small mb-4" id="delete-item-name">刪除後將無法恢復這筆紀錄喔！</p>
+      <div class="d-flex justify-content-center gap-3">
+        <button class="btn btn-light fw-bold" style="border-radius: 15px; width: 45%; color: #aaa;" onclick="closeDeleteModal()">先不要</button>
+        <button class="btn btn-pink fw-bold" id="confirm-delete-btn" style="border-radius: 15px; width: 45%;" onclick="executeDelete()">確定刪除</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then(function(registrations) {
@@ -180,6 +206,9 @@
 
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec';
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
+    
+    // 儲存準備被刪除的資料索引
+    let targetDeleteIndex = -1;
 
     function showPage(pageId, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
@@ -263,15 +292,71 @@
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted">今日暫無行程</p>';
     }
 
+    // 🌸 更新記帳列表：加入了你的專屬 delete.png 按鈕
     function updateList(data) {
       let total = 0;
-      let expHtml = (data.expenses || []).slice().reverse().map(row => {
+      // 利用 map 記住原本的 index，再 reverse() 反轉陣列讓最新的一筆在最上面
+      let expHtml = (data.expenses || []).map((row, index) => ({row, index})).reverse().map(item => {
+        let row = item.row;
+        let originalIndex = item.index; // 記住這筆資料在 Google Sheet 裡的真實位置
         let twd = parseFloat(row[4]) || Math.round(row[3] * currentRate);
         total += twd;
-        return `<div class="pink-card d-flex justify-content-between align-items-center mb-2" style="padding: 15px 20px;"><div><div class="text-muted small">${row[1]}</div><div class="fw-bold">${row[2]}</div></div><div class="text-end"><div><div class="fw-bold text-danger">$${twd.toLocaleString()}</div><div class="text-muted small">₩${Number(row[3]).toLocaleString()}</div></div></div></div>`;
+        
+        return `<div class="pink-card d-flex justify-content-between align-items-center mb-2" style="padding: 15px 20px;">
+                  <div>
+                    <div class="text-muted small">${row[1]}</div>
+                    <div class="fw-bold">${row[2]}</div>
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <div class="text-end me-3">
+                      <div class="fw-bold text-danger">$${twd.toLocaleString()}</div>
+                      <div class="text-muted small">₩${Number(row[3]).toLocaleString()}</div>
+                    </div>
+                    <img src="https://cdn.jsdelivr.net/gh/de8256321-ship-it/202603seoul@main/delete.png" width="22" class="delete-icon-btn" style="cursor: pointer; opacity: 0.8;" onclick="openDeleteModal(${originalIndex}, '${row[2]}')">
+                  </div>
+                </div>`;
       }).join('');
       document.getElementById('total-twd').innerText = total.toLocaleString();
       document.getElementById('expense-list').innerHTML = expHtml;
+    }
+
+    // 🌸 刪除彈出視窗的開關控制
+    function openDeleteModal(index, itemName) {
+      targetDeleteIndex = index;
+      document.getElementById('delete-item-name').innerText = `你要刪除「${itemName}」嗎？`;
+      const modal = document.getElementById('deleteConfirmModal');
+      modal.style.display = 'flex';
+      // 用微小的延遲觸發 CSS 動畫
+      setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('deleteConfirmModal');
+      modal.classList.remove('show');
+      setTimeout(() => { modal.style.display = 'none'; targetDeleteIndex = -1; }, 300);
+    }
+
+    // 🌸 執行刪除動作 (發送請求給 GAS)
+    function executeDelete() {
+      if(targetDeleteIndex === -1) return;
+      
+      let btn = document.getElementById('confirm-delete-btn');
+      btn.innerHTML = '刪除中...';
+      btn.disabled = true;
+
+      fetch(GAS_URL, { 
+        method: 'POST', 
+        body: JSON.stringify({ action: 'delete', index: targetDeleteIndex })
+      }).then(r => r.json()).then(d => {
+        localStorage.setItem('seoulAppData', JSON.stringify(d)); 
+        updateList(d); // 更新畫面
+        closeDeleteModal();
+        btn.innerHTML = '確定刪除'; btn.disabled = false;
+      }).catch(err => {
+        alert('連線失敗，請檢查網路！');
+        closeDeleteModal();
+        btn.innerHTML = '確定刪除'; btn.disabled = false;
+      });
     }
 
     function hideLoading() {
@@ -280,7 +365,6 @@
       setTimeout(() => { loading.style.display = 'none'; }, 300);
     }
 
-    // 🌸 監聽自訂選單點擊事件
     document.querySelectorAll('.custom-option').forEach(item => {
       item.addEventListener('click', event => {
         event.preventDefault(); 
@@ -290,8 +374,7 @@
       });
     });
 
-    let touchStartX = 0;
-    let touchStartY = 0;
+    let touchStartX = 0; let touchStartY = 0;
     const itinPage = document.getElementById('page-itinerary');
 
     itinPage.addEventListener('touchstart', e => {
@@ -301,22 +384,14 @@
 
     itinPage.addEventListener('touchend', e => {
       if (!itinPage.classList.contains('active-section')) return;
-
-      let touchEndX = e.changedTouches[0].screenX;
-      let touchEndY = e.changedTouches[0].screenY;
-
-      let dx = touchEndX - touchStartX; 
-      let dy = touchEndY - touchStartY; 
+      let dx = e.changedTouches[0].screenX - touchStartX; 
+      let dy = e.changedTouches[0].screenY - touchStartY; 
 
       if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 50) {
         let dates = [...new Set(globalData.itinerary.concat(globalData.routes).map(r => r[1]))].filter(d => d).sort();
         let currentIndex = dates.indexOf(currentSelectedDate);
-
-        if (dx < 0 && currentIndex < dates.length - 1) {
-          filterItinerary(dates[currentIndex + 1], document.querySelectorAll('.date-tab')[currentIndex + 1]);
-        } else if (dx > 0 && currentIndex > 0) {
-          filterItinerary(dates[currentIndex - 1], document.querySelectorAll('.date-tab')[currentIndex - 1]);
-        }
+        if (dx < 0 && currentIndex < dates.length - 1) filterItinerary(dates[currentIndex + 1], document.querySelectorAll('.date-tab')[currentIndex + 1]);
+        else if (dx > 0 && currentIndex > 0) filterItinerary(dates[currentIndex - 1], document.querySelectorAll('.date-tab')[currentIndex - 1]);
       }
     }, {passive: true});
 
@@ -339,8 +414,6 @@
         localStorage.setItem('seoulAppData', JSON.stringify(d)); 
         updateList(d); btn.disabled = false;
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
-        
-        // 🌸 記帳送出後，把自訂選單重置回「飲食」
         document.getElementById('expense-category').value = '飲食';
         document.getElementById('category-display').innerHTML = '<img src="https://cdn.jsdelivr.net/gh/de8256321-ship-it/202603seoul@main/food.png" width="22" style="margin-right:8px;"> 飲食';
       });
