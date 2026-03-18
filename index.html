@@ -56,9 +56,14 @@
     .content-area { padding: 0px 15px 120px; min-height: calc(100vh - 150px); } 
     .pink-card { background: white; border-radius: 22px; border: none; box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; }
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
-    .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-bottom: calc(env(safe-area-inset-bottom) + 5px); }
-    .nav-btn { border: none; background: none; color: #bbb; font-weight: bold; font-size: 0.85rem; padding: 10px; flex: 1; }
-    .nav-btn.active { color: var(--sakura-pink); background: #fff8f9; border-radius: 12px; }
+    
+    /* 🌸 升級版底部導航列 CSS */
+    .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-top: 10px; padding-bottom: calc(env(safe-area-inset-bottom) + 12px); box-shadow: 0 -4px 15px rgba(255,183,197,0.15); }
+    .nav-btn { border: none; background: none; padding: 12px; flex: 1; display: flex; justify-content: center; align-items: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .nav-btn.active { background: #fff8f9; border-radius: 22px; }
+    .nav-icon { width: 32px; height: 32px; opacity: 0.4; transition: all 0.3s ease; }
+    .nav-btn.active .nav-icon { opacity: 1; transform: scale(1.15); } /* 選中時放大並變亮 */
+
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; }
     .btn-pink { background: linear-gradient(135deg, #FFB7C5 0%, #ff8fa3 100%); color: white; border-radius: 18px; border: none; padding: 14px; font-weight: 900; width: 100%; }
     .loading-screen { 
@@ -79,7 +84,6 @@
     .dropdown-toggle::after { display: none; }
     .custom-option:hover, .custom-option:focus { background-color: #fff0f5; color: var(--sakura-pink); font-weight: bold; }
 
-    /* 🌸 專屬客製化超可愛刪除提示框樣式 */
     .custom-modal-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px);
@@ -177,11 +181,17 @@
     </div>
   </div>
 
-  <nav class="navbar fixed-bottom py-2">
+  <nav class="navbar fixed-bottom">
     <div class="container-fluid d-flex justify-content-evenly">
-      <button onclick="showPage('itinerary', this)" class="nav-btn active">📅 行程</button>
-      <button onclick="showPage('budget', this)" class="nav-btn">💰 記帳</button>
-      <button onclick="showPage('exchange', this)" class="nav-btn">⚡ 匯率</button>
+      <button onclick="showPage('itinerary', this)" class="nav-btn active">
+        <img src="images/luggage.png" class="nav-icon" alt="行程">
+      </button>
+      <button onclick="showPage('budget', this)" class="nav-btn">
+        <img src="images/dollar.png" class="nav-icon" alt="記帳">
+      </button>
+      <button onclick="showPage('exchange', this)" class="nav-btn">
+        <img src="images/calculator.png" class="nav-icon" alt="匯率">
+      </button>
     </div>
   </nav>
 
@@ -204,7 +214,7 @@
       });
     }
 
-    // 🌸 已經幫你把真正的網址填進來了！
+    // 🌸 已經綁定你專屬的連線網址，不用再改了！
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwsKsVGg6TW9VybGQP2PtXJZIvBbQX7Uhyg5695fa3Pe-p6z67oHhgCfPck0yNMk3SJ/exec';
 
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
@@ -400,7 +410,6 @@
     const cachedData = localStorage.getItem('seoulAppData');
     if (cachedData) { renderApp(JSON.parse(cachedData)); hideLoading(); }
 
-    // 🌸 已經移除了容易混淆的警告判斷式，直接連線抓資料！
     fetch(GAS_URL).then(res => res.json()).then(data => {
       localStorage.setItem('seoulAppData', JSON.stringify(data));
       renderApp(data); 
