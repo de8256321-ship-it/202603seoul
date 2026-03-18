@@ -149,7 +149,7 @@
         </div>
         <div class="row g-2 mb-4">
           <div class="col-5">
-            <input type="number" id="expense-twd" class="form-control text-danger fw-bold" placeholder="NT$" readonly>
+            <input type="number" id="expense-twd" class="form-control text-danger fw-bold" placeholder="NT$">
           </div>
           <div class="col-7">
             <input type="number" id="expense-krw" class="form-control" placeholder="₩ 韓元" oninput="autoCalcTWD()">
@@ -187,7 +187,6 @@
 
   <div id="deleteConfirmModal" class="custom-modal-overlay">
     <div class="custom-modal-box">
-      <div style="font-size: 3rem; margin-bottom: 5px;">🥺</div>
       <h4 class="fw-bold mb-2" style="color: #ff8fa3;">確定要刪除嗎？</h4>
       <p class="text-muted small mb-4" id="delete-item-name">刪除後將無法恢復這筆紀錄喔！</p>
       <div class="d-flex justify-content-center gap-3">
@@ -204,13 +203,11 @@
       });
     }
 
-    // 🚨🚨🚨 請將你剛剛「新增部署作業」拿到的最新網址，貼在下方單引號內！🚨🚨🚨
-    const GAS_URL = 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec';
-    // 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    // 🚨🚨🚨 請確保這裡貼的是你最新的 GAS_URL！🚨🚨🚨
+    const GAS_URL = '把你的新網址貼在這裡';
+    // 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
-    
-    // 這個變數用來存儲 GAS 提供的「真實行號 (rowNum)」
     let targetDeleteRowNum = -1;
 
     function showPage(pageId, btn) {
@@ -300,7 +297,6 @@
 
     function updateList(data) {
       let total = 0;
-      // 這裡非常重要！我們擷取 GAS 後端放在陣列最後一個位置 (row[5]) 的真實行號
       let expHtml = (data.expenses || []).map((row) => {
         return { row: row, realRowNum: row[5] };
       }).reverse().map(item => {
@@ -329,7 +325,7 @@
     }
 
     function openDeleteModal(rowNum, itemName) {
-      targetDeleteRowNum = rowNum; // 將真實行號暫存起來
+      targetDeleteRowNum = rowNum; 
       document.getElementById('delete-item-name').innerText = `你要刪除「${itemName}」嗎？`;
       const modal = document.getElementById('deleteConfirmModal');
       modal.style.display = 'flex';
@@ -349,7 +345,6 @@
       btn.innerHTML = '刪除中...';
       btn.disabled = true;
 
-      // 🌸 關鍵修正：發送給 GAS 的請求中，明確帶上它要的 rowNum 參數！
       fetch(GAS_URL, { 
         method: 'POST', 
         body: JSON.stringify({ action: 'delete', rowNum: targetDeleteRowNum })
@@ -405,7 +400,7 @@
     const cachedData = localStorage.getItem('seoulAppData');
     if (cachedData) { renderApp(JSON.parse(cachedData)); hideLoading(); }
 
-    if (GAS_URL === '把你的新網址貼在這裡') {
+    if (GAS_URL === 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec') {
       alert("⚠️ 請記得把 GAS_URL 替換成你新部署的網址喔！");
     } else {
       fetch(GAS_URL).then(res => res.json()).then(data => {
