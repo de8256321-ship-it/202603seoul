@@ -187,6 +187,7 @@
 
   <div id="deleteConfirmModal" class="custom-modal-overlay">
     <div class="custom-modal-box">
+      <div style="font-size: 3rem; margin-bottom: 5px;">🥺</div>
       <h4 class="fw-bold mb-2" style="color: #ff8fa3;">確定要刪除嗎？</h4>
       <p class="text-muted small mb-4" id="delete-item-name">刪除後將無法恢復這筆紀錄喔！</p>
       <div class="d-flex justify-content-center gap-3">
@@ -203,9 +204,8 @@
       });
     }
 
-    // 🚨🚨🚨 請確保這裡貼的是你最新的 GAS_URL！🚨🚨🚨
-    const GAS_URL = '把你的新網址貼在這裡';
-    // 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+    // 🌸 已經幫你把真正的網址填進來了！
+    const GAS_URL = 'https://script.google.com/macros/s/AKfycbwsKsVGg6TW9VybGQP2PtXJZIvBbQX7Uhyg5695fa3Pe-p6z67oHhgCfPck0yNMk3SJ/exec';
 
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
     let targetDeleteRowNum = -1;
@@ -400,15 +400,12 @@
     const cachedData = localStorage.getItem('seoulAppData');
     if (cachedData) { renderApp(JSON.parse(cachedData)); hideLoading(); }
 
-    if (GAS_URL === 'https://script.google.com/macros/s/AKfycbx1sBOtKjH9gO1Q9OlUbXGbgmw3uzRLjanuKwAAfMcDkjq7-zNvsqRDcu-fEqKokjFK/exec') {
-      alert("⚠️ 請記得把 GAS_URL 替換成你新部署的網址喔！");
-    } else {
-      fetch(GAS_URL).then(res => res.json()).then(data => {
-        localStorage.setItem('seoulAppData', JSON.stringify(data));
-        renderApp(data); 
-        hideLoading(); 
-      }).catch(err => { hideLoading(); });
-    }
+    // 🌸 已經移除了容易混淆的警告判斷式，直接連線抓資料！
+    fetch(GAS_URL).then(res => res.json()).then(data => {
+      localStorage.setItem('seoulAppData', JSON.stringify(data));
+      renderApp(data); 
+      hideLoading(); 
+    }).catch(err => { hideLoading(); });
 
     function submitExpense() {
       let btn = document.getElementById('submit-btn'); btn.disabled = true;
