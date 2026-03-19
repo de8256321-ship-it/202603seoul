@@ -57,14 +57,13 @@
     .pink-card { background: white; border-radius: 22px; border: none; box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; }
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
     
-    /* 🌸 導航列 CSS（圖文並茂，增加了文字） */
+    /* 🌸 導航列 CSS */
     .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-top: 10px; padding-bottom: calc(env(safe-area-inset-bottom) + 12px); box-shadow: 0 -4px 15px rgba(255,183,197,0.15); }
     .nav-btn { border: none; background: none; padding: 8px 5px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); gap: 4px; }
     .nav-btn.active { background: #fff8f9; border-radius: 18px; }
     .nav-icon { width: 24px; height: 24px; opacity: 0.45; transition: all 0.3s ease; }
-    .nav-emoji { font-size: 24px; opacity: 0.45; transition: all 0.3s ease; } /* 購物頁面預設 Emoji 樣式 */
+    .nav-emoji { font-size: 24px; opacity: 0.45; transition: all 0.3s ease; }
     .nav-text { font-size: 0.75rem; font-weight: bold; color: #bbb; transition: all 0.3s ease; }
-    /* 選中時的狀態變化 */
     .nav-btn.active .nav-icon, .nav-btn.active .nav-emoji { opacity: 1; transform: scale(1.1); } 
     .nav-btn.active .nav-text { color: var(--sakura-pink); }
 
@@ -105,21 +104,25 @@
     .delete-icon-btn { transition: transform 0.1s; }
     .delete-icon-btn:active { transform: scale(0.8); }
 
-    /* 🛍️ 購物頁面專用 CSS */
+    /* 🛍️ 升級版：購物頁面專用 CSS (包含文字與排版) */
+    .shop-item-container {
+      display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer;
+    }
+    .shop-item-container:hover .shop-image-card {
+      transform: scale(1.05); box-shadow: 0 8px 20px rgba(255, 183, 197, 0.4); border-color: var(--sakura-pink);
+    }
+    .shop-item-container:active .shop-image-card { transform: scale(0.98); }
     .shop-image-card {
-      border-radius: 20px;
-      border: 3px solid white;
-      box-shadow: 0 4px 10px rgba(255, 183, 197, 0.2);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      overflow: hidden;
+      border-radius: 20px; border: 3px solid white; box-shadow: 0 4px 10px rgba(255, 183, 197, 0.2);
+      transition: all 0.2s ease; overflow: hidden; width: 100%; aspect-ratio: 1 / 1; 
+      display: flex; align-items: center; justify-content: center; background: white;
     }
-    .shop-image-card:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(255, 183, 197, 0.3); }
-    .modal-content-img {
-      border-radius: 20px;
-      max-width: 100%;
-      height: auto;
+    .shop-image-card img { width: 100%; height: 100%; object-fit: contain; } /* 確保圖片不變形 */
+    .shop-item-name {
+      font-size: 0.8rem; font-weight: 700; color: #666; text-align: center; 
+      line-height: 1.3; padding: 0 5px; word-break: break-word;
     }
+    .modal-content-img { border-radius: 20px; max-width: 100%; height: auto; }
   </style>
 </head>
 <body>
@@ -145,7 +148,7 @@
   <div id="page-shopping" class="section">
     <div style="padding: 30px 15px 120px;">
       <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">購物清單 🌸</h3>
-      <div id="shopping-image-grid" class="row row-cols-2 row-cols-lg-6 g-3">
+      <div id="shopping-image-grid" class="row row-cols-2 row-cols-lg-6 g-4">
         </div>
     </div>
   </div>
@@ -216,7 +219,8 @@
         <span class="nav-text">行程</span>
       </button>
       <button onclick="showPage('shopping', this)" class="nav-btn">
-        <span class="nav-emoji">🛒</span> <span class="nav-text">購物</span>
+        <span class="nav-emoji">🛒</span> 
+        <span class="nav-text">購物</span>
       </button>
       <button onclick="showPage('budget', this)" class="nav-btn">
         <img src="images/dollar.png" class="nav-icon" alt="記帳">
@@ -258,22 +262,22 @@
       });
     }
 
-    // 🌸 已經綁定你專屬的連線網址，不用再改了！
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwsKsVGg6TW9VybGQP2PtXJZIvBbQX7Uhyg5695fa3Pe-p6z67oHhgCfPck0yNMk3SJ/exec';
 
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
     let targetDeleteRowNum = -1;
 
-    // 🛍️ 手動定義 buy/ 資料夾下的圖片檔名，如果你有新圖片需要手動更新這裡
-    const shoppingImages = [
-      'A000000171423135ko.png',
-      'A000000181059162ko.jpg',
-      'A00000023272524ko.png',
-      'A00000023442227ko.jpg',
-      'A00000024843004ko.jpg'
+    // 🛍️ 升級版：包含了圖片檔名與對應的商品名稱！
+    // 如果之後有新增商品，請照著這個格式 { img: '檔案名稱.png', name: '商品名稱' } 加在下方
+    const shoppingItems = [
+      { img: 'A000000171423135ko.png', name: 'UNOVE 護髮乳限定版' },
+      { img: 'A000000181059162ko.jpg', name: '【全新花漾版】THE TOOL LAB 全天修容套裝 ' },
+      { img: 'A00000023272524ko.png', name: "dalba 粉嫩提亮防曬" },
+      { img: 'A00000023442227ko.jpg', name: 'Menokin 30秒速效泡泡麵膜' },
+      { img: 'A00000024843004ko.jpg', name: 'Blanc Nature 泡泡潔面乳' }
+      { img: 'tw-11134207-7rasa-m3ad9xwib2b12e.jpg', name: '(G)I-DLE - I LOVE (5TH MINI ALBUM) ' }
     ];
 
-    // 初始化 Bootstrap Modal 元件
     const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
 
     function showPage(pageId, btn) {
@@ -320,7 +324,6 @@
       currentRate = data.rate || 0.0235;
       document.getElementById('current-rate').innerText = currentRate.toFixed(4);
       
-      // 渲染行程日期標籤
       let itinDates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
       if(itinDates.length > 0) {
         document.getElementById('itin-date-tabs').innerHTML = itinDates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
@@ -328,7 +331,7 @@
       }
       
       updateExpenseList(data);
-      renderShoppingGrid(); // 初始化購物頁面
+      renderShoppingGrid(); 
     }
 
     function filterItinerary(date, el) {
@@ -367,15 +370,18 @@
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted">今日暫無行程</p>';
     }
 
-    // 🛍️ 渲染購物清單 Grid
+    // 🛍️ 升級版：渲染購物清單 (加入文字)
     function renderShoppingGrid() {
       const grid = document.getElementById('shopping-image-grid');
-      let html = shoppingImages.map(imgName => {
-        const imgSrc = `buy/${imgName}`;
+      let html = shoppingItems.map(item => {
+        const imgSrc = `buy/${item.img}`;
         return `
           <div class="col">
-            <div class="shop-image-card" onclick="openImageModal('${imgSrc}')">
-              <img src="${imgSrc}" class="img-fluid" alt="購物圖片" loading="lazy">
+            <div class="shop-item-container" onclick="openImageModal('${imgSrc}')">
+              <div class="shop-image-card">
+                <img src="${imgSrc}" alt="${item.name}" loading="lazy">
+              </div>
+              <div class="shop-item-name">${item.name}</div>
             </div>
           </div>
         `;
@@ -383,7 +389,6 @@
       grid.innerHTML = html || '<p class="text-center py-5 text-muted w-100">清單還是空的喔 🛒</p>';
     }
 
-    // 🛍️ 打開圖片放大視窗
     function openImageModal(src) {
       document.getElementById('expanded-image').src = src;
       imageModal.show();
@@ -460,7 +465,6 @@
       setTimeout(() => { loading.style.display = 'none'; }, 300);
     }
 
-    // 記帳頁面的類別選擇事件
     document.querySelectorAll('.custom-option').forEach(item => {
       item.addEventListener('click', event => {
         event.preventDefault(); 
@@ -470,7 +474,6 @@
       });
     });
 
-    // 行程頁面的手勢切換
     let touchStartX = 0; let touchStartY = 0;
     const itinPage = document.getElementById('page-itinerary');
 
@@ -492,7 +495,6 @@
       }
     }, {passive: true});
 
-    // 初始化：更新天氣和資料
     fetchSeoulWeather();
     const cachedData = localStorage.getItem('seoulAppData');
     if (cachedData) { renderApp(JSON.parse(cachedData)); hideLoading(); }
