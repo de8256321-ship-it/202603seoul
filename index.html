@@ -57,14 +57,15 @@
     .pink-card { background: white; border-radius: 22px; border: none; box-shadow: 0 6px 18px rgba(255,183,197,0.2); margin-bottom: 18px; padding: 20px; }
     .note-badge { background: var(--sakura-pink); color: white; border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; font-weight: bold; }
     
-    /* 🌸 升級版：圖文並茂導航列 CSS */
-    .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-top: 8px; padding-bottom: calc(env(safe-area-inset-bottom) + 8px); box-shadow: 0 -4px 15px rgba(255,183,197,0.15); }
+    /* 🌸 導航列 CSS（圖文並茂，增加了文字） */
+    .navbar { background: white !important; border-top: 1px solid #ffe4e9; padding-top: 10px; padding-bottom: calc(env(safe-area-inset-bottom) + 12px); box-shadow: 0 -4px 15px rgba(255,183,197,0.15); }
     .nav-btn { border: none; background: none; padding: 8px 5px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); gap: 4px; }
     .nav-btn.active { background: #fff8f9; border-radius: 18px; }
     .nav-icon { width: 24px; height: 24px; opacity: 0.45; transition: all 0.3s ease; }
+    .nav-emoji { font-size: 24px; opacity: 0.45; transition: all 0.3s ease; } /* 購物頁面預設 Emoji 樣式 */
     .nav-text { font-size: 0.75rem; font-weight: bold; color: #bbb; transition: all 0.3s ease; }
     /* 選中時的狀態變化 */
-    .nav-btn.active .nav-icon { opacity: 1; transform: scale(1.1); } 
+    .nav-btn.active .nav-icon, .nav-btn.active .nav-emoji { opacity: 1; transform: scale(1.1); } 
     .nav-btn.active .nav-text { color: var(--sakura-pink); }
 
     .total-box { background: linear-gradient(135deg, #FFB7C5 0%, #ff9fb1 100%); color: white; text-align: center; border-radius: 25px; padding: 25px; margin-bottom: 20px; }
@@ -103,6 +104,22 @@
     .custom-modal-overlay.show .custom-modal-box { transform: translateY(0) scale(1); }
     .delete-icon-btn { transition: transform 0.1s; }
     .delete-icon-btn:active { transform: scale(0.8); }
+
+    /* 🛍️ 購物頁面專用 CSS */
+    .shop-image-card {
+      border-radius: 20px;
+      border: 3px solid white;
+      box-shadow: 0 4px 10px rgba(255, 183, 197, 0.2);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      overflow: hidden;
+    }
+    .shop-image-card:hover { transform: scale(1.05); box-shadow: 0 8px 20px rgba(255, 183, 197, 0.3); }
+    .modal-content-img {
+      border-radius: 20px;
+      max-width: 100%;
+      height: auto;
+    }
   </style>
 </head>
 <body>
@@ -123,6 +140,14 @@
       <div id="itin-date-tabs" class="date-tabs-container"></div>
     </div>
     <div class="content-area" id="itinerary-list"></div>
+  </div>
+
+  <div id="page-shopping" class="section">
+    <div style="padding: 30px 15px 120px;">
+      <h3 class="text-center mb-4 fw-bold" style="color: #ff8fa3;">購物清單 🌸</h3>
+      <div id="shopping-image-grid" class="row row-cols-2 row-cols-lg-6 g-3">
+        </div>
+    </div>
   </div>
 
   <div id="page-budget" class="section">
@@ -190,6 +215,9 @@
         <img src="images/luggage.png" class="nav-icon" alt="行程">
         <span class="nav-text">行程</span>
       </button>
+      <button onclick="showPage('shopping', this)" class="nav-btn">
+        <span class="nav-emoji">🛒</span> <span class="nav-text">購物</span>
+      </button>
       <button onclick="showPage('budget', this)" class="nav-btn">
         <img src="images/dollar.png" class="nav-icon" alt="記帳">
         <span class="nav-text">記帳</span>
@@ -203,11 +231,22 @@
 
   <div id="deleteConfirmModal" class="custom-modal-overlay">
     <div class="custom-modal-box">
+      <div style="font-size: 3rem; margin-bottom: 5px;">🥺</div>
       <h4 class="fw-bold mb-2" style="color: #ff8fa3;">確定要刪除嗎？</h4>
       <p class="text-muted small mb-4" id="delete-item-name">刪除後將無法恢復這筆紀錄喔！</p>
       <div class="d-flex justify-content-center gap-3">
         <button class="btn btn-light fw-bold" style="border-radius: 15px; width: 45%; color: #aaa;" onclick="closeDeleteModal()">先不要</button>
         <button class="btn btn-pink fw-bold" id="confirm-delete-btn" style="border-radius: 15px; width: 45%;" onclick="executeDelete()">確定刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content" style="background: rgba(255,240,245,0.8); backdrop-filter: blur(10px); border: none; border-radius: 25px;">
+        <div class="modal-body text-center" style="padding: 10px;">
+          <img id="expanded-image" src="" class="modal-content-img" alt="放大圖片">
+        </div>
       </div>
     </div>
   </div>
@@ -219,16 +258,29 @@
       });
     }
 
+    // 🌸 已經綁定你專屬的連線網址，不用再改了！
     const GAS_URL = 'https://script.google.com/macros/s/AKfycbwsKsVGg6TW9VybGQP2PtXJZIvBbQX7Uhyg5695fa3Pe-p6z67oHhgCfPck0yNMk3SJ/exec';
 
     let globalData = { itinerary: [], routes: [], expenses: [] }, currentRate = 0.0235, currentSelectedDate = "";
     let targetDeleteRowNum = -1;
 
+    // 🛍️ 手動定義 buy/ 資料夾下的圖片檔名，如果你有新圖片需要手動更新這裡
+    const shoppingImages = [
+      'A000000171423135ko.png',
+      'A000000181059162ko.jpg',
+      'A00000023272524ko.png',
+      'A00000023442227ko.jpg',
+      'A00000024843004ko.jpg'
+    ];
+
+    // 初始化 Bootstrap Modal 元件
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+
     function showPage(pageId, btn) {
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active-section'));
       document.getElementById('page-' + pageId).classList.add('active-section');
       document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      if(btn) btn.classList.add('active');
     }
 
     function autoCalcTWD() {
@@ -267,10 +319,16 @@
       globalData = data; 
       currentRate = data.rate || 0.0235;
       document.getElementById('current-rate').innerText = currentRate.toFixed(4);
-      let dates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
-      document.getElementById('itin-date-tabs').innerHTML = dates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
-      if (dates.length > 0 && !currentSelectedDate) filterItinerary(dates[0], document.querySelector('.date-tab'));
-      updateList(data);
+      
+      // 渲染行程日期標籤
+      let itinDates = [...new Set(data.itinerary.concat(data.routes).map(r => r[1]))].filter(d => d).sort();
+      if(itinDates.length > 0) {
+        document.getElementById('itin-date-tabs').innerHTML = itinDates.map((d, i) => `<div class="date-tab ${i===0?'active':''}" onclick="filterItinerary('${d}', this)"><div style="font-size: 0.6rem; opacity:0.6;">DAY ${i+1}</div><div>${d}</div></div>`).join('');
+        if (!currentSelectedDate) filterItinerary(itinDates[0], document.querySelector('.date-tab'));
+      }
+      
+      updateExpenseList(data);
+      renderShoppingGrid(); // 初始化購物頁面
     }
 
     function filterItinerary(date, el) {
@@ -309,7 +367,29 @@
       listDiv.innerHTML = html || '<p class="text-center py-5 text-muted">今日暫無行程</p>';
     }
 
-    function updateList(data) {
+    // 🛍️ 渲染購物清單 Grid
+    function renderShoppingGrid() {
+      const grid = document.getElementById('shopping-image-grid');
+      let html = shoppingImages.map(imgName => {
+        const imgSrc = `buy/${imgName}`;
+        return `
+          <div class="col">
+            <div class="shop-image-card" onclick="openImageModal('${imgSrc}')">
+              <img src="${imgSrc}" class="img-fluid" alt="購物圖片" loading="lazy">
+            </div>
+          </div>
+        `;
+      }).join('');
+      grid.innerHTML = html || '<p class="text-center py-5 text-muted w-100">清單還是空的喔 🛒</p>';
+    }
+
+    // 🛍️ 打開圖片放大視窗
+    function openImageModal(src) {
+      document.getElementById('expanded-image').src = src;
+      imageModal.show();
+    }
+
+    function updateExpenseList(data) {
       let total = 0;
       let expHtml = (data.expenses || []).map((row) => {
         return { row: row, realRowNum: row[5] };
@@ -364,7 +444,7 @@
         body: JSON.stringify({ action: 'delete', rowNum: targetDeleteRowNum })
       }).then(r => r.json()).then(d => {
         localStorage.setItem('seoulAppData', JSON.stringify(d)); 
-        updateList(d); 
+        updateExpenseList(d); 
         closeDeleteModal();
         btn.innerHTML = '確定刪除'; btn.disabled = false;
       }).catch(err => {
@@ -380,6 +460,7 @@
       setTimeout(() => { loading.style.display = 'none'; }, 300);
     }
 
+    // 記帳頁面的類別選擇事件
     document.querySelectorAll('.custom-option').forEach(item => {
       item.addEventListener('click', event => {
         event.preventDefault(); 
@@ -389,6 +470,7 @@
       });
     });
 
+    // 行程頁面的手勢切換
     let touchStartX = 0; let touchStartY = 0;
     const itinPage = document.getElementById('page-itinerary');
 
@@ -410,6 +492,7 @@
       }
     }, {passive: true});
 
+    // 初始化：更新天氣和資料
     fetchSeoulWeather();
     const cachedData = localStorage.getItem('seoulAppData');
     if (cachedData) { renderApp(JSON.parse(cachedData)); hideLoading(); }
@@ -427,7 +510,7 @@
         krwAmount: document.getElementById('expense-krw').value, twdAmount: document.getElementById('expense-twd').value
       })}).then(r => r.json()).then(d => {
         localStorage.setItem('seoulAppData', JSON.stringify(d)); 
-        updateList(d); btn.disabled = false;
+        updateExpenseList(d); btn.disabled = false;
         ['expense-item','expense-krw','expense-twd'].forEach(id => document.getElementById(id).value='');
         document.getElementById('expense-category').value = '飲食';
         document.getElementById('category-display').innerHTML = '<img src="https://cdn.jsdelivr.net/gh/de8256321-ship-it/202603seoul@main/food.png" width="22" style="margin-right:8px;"> 飲食';
